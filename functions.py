@@ -4,6 +4,12 @@ from pylib import *
 import json
 from scipy.stats import gaussian_kde
 
+#================================================================
+# AUTHOR NOTES
+# This package is used for Coastal Ocean Modelling
+# 
+#===============================================================
+
 #%% schism related
 def gen_bpfile2(lons,lats,stations,fname='station.bp',cmt='station.bp',hgrid='hgrid.gr3',vgrid='vgrid.in'):
     '''
