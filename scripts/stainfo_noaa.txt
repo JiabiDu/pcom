@@ -1,0 +1,372 @@
+id="1611400" name="Nawiliwili" lat="21.9544" lon="-159.3561"/>  NAVD datum unavailable
+id="1612340" name="Honolulu" lat="21.3067" lon="-157.8670"/>  NAVD datum unavailable
+id="1612480" name="Mokuoloe" lat="21.4331" lon="-157.7900"/>  NAVD datum unavailable
+id="1615680" name="Kahului, Kahului Harbor" lat="20.8950" lon="-156.4767"/>  NAVD datum unavailable
+id="1617433" name="Kawaihae" lat="20.0366" lon="-155.8294"/>  NAVD datum unavailable
+id="1617760" name="Hilo, Hilo Bay, Kuhio Bay" lat="19.7303" lon="-155.0556"/>  NAVD datum unavailable
+id="1619910" name="Sand Island, Midway Islands" lat="28.2117" lon="-177.3600"/>  NAVD datum unavailable
+id="1630000" name="Apra Harbor, Guam" lat="13.4434" lon="144.6564"/>  NAVD datum available
+id="1631428" name="Pago Bay, Guam" lat="13.4283" lon="144.7969"/>  NAVD datum unavailable
+id="1770000" name="Pago Pago, American Samoa" lat="-14.2767" lon="-170.6894"/>  NAVD datum unavailable
+id="1820000" name="Kwajalein, Marshall Islands" lat="8.7317" lon="167.7361"/>  NAVD datum unavailable
+id="1890000" name="Wake Island, Pacific Ocean" lat="19.2907" lon="166.6176"/>  NAVD datum unavailable
+id="2695535" name="Bermuda Biological Station" lat="32.3700" lon="-64.6950"/>  NAVD datum unavailable
+id="2695540" name="Bermuda, St. Georges Island" lat="32.3734" lon="-64.7033"/>  NAVD datum unavailable
+id="8311030" name="Ogdensburg" no data  NAVD datum unavailable
+id="8311062" name="Alexandria Bay" no data  NAVD datum unavailable
+id="8410140" name="Eastport" lat="44.9033" lon="-66.9850"/>  NAVD datum available
+id="8411060" name="Cutler Farris Wharf" lat="44.6570" lon="-67.2047"/>  NAVD datum available
+id="8413320" name="Bar Harbor" lat="44.3922" lon="-68.2043"/>  NAVD datum unavailable
+id="8418150" name="Portland" lat="43.6567" lon="-70.2467"/>  NAVD datum available
+id="8419317" name="Wells" lat="43.3200" lon="-70.5633"/>  NAVD datum available
+id="8423898" name="Fort Point" lat="43.0714" lon="-70.7106"/>  NAVD datum available
+id="8443970" name="Boston" lat="42.3539" lon="-71.0503"/>  NAVD datum available
+id="8447386" name="Fall River" lat="41.7043" lon="-71.1641"/>  NAVD datum available
+id="8447387" name="Borden Flats Light at Fall River" no data  NAVD datum unavailable
+id="8447412" name="Fall River Visibility" no data  NAVD datum unavailable
+id="8447435" name="Chatham, Lydia Cove" lat="41.6885" lon="-69.9511"/>  NAVD datum available
+id="8447930" name="Woods Hole" lat="41.5236" lon="-70.6711"/>  NAVD datum available
+id="8449130" name="Nantucket Island" lat="41.2853" lon="-70.0964"/>  NAVD datum unavailable
+id="8452314" name="Sandy Point, Prudence Island" no data  NAVD datum unavailable
+id="8452660" name="Newport" lat="41.5050" lon="-71.3267"/>  NAVD datum available
+id="8452944" name="Conimicut Light" lat="41.7167" lon="-71.3433"/>  NAVD datum unavailable
+id="8452951" name="Potter Cove, Prudence Island" no data  NAVD datum unavailable
+id="8453662" name="Providence Visibility" no data  NAVD datum unavailable
+id="8454000" name="Providence" lat="41.8067" lon="-71.4006"/>  NAVD datum available
+id="8454049" name="Quonset Point" lat="41.5868" lon="-71.4110"/>  NAVD datum unavailable
+id="8461490" name="New London, Thames River" lat="41.3550" lon="-72.0867"/>  NAVD datum available
+id="8465705" name="New Haven" lat="41.2833" lon="-72.9083"/>  NAVD datum unavailable
+id="8467150" name="Bridgeport" lat="41.1758" lon="-73.1840"/>  NAVD datum available
+id="8510560" name="Montauk" lat="41.0483" lon="-71.9594"/>  NAVD datum available
+id="8516945" name="Kings Point" lat="40.8103" lon="-73.7650"/>  NAVD datum available
+id="8517986" name="Verrazano-Narrows Air Gap" no data  NAVD datum unavailable
+id="8518750" name="The Battery" lat="40.7006" lon="-74.0142"/>  NAVD datum available
+id="8518962" name="Turkey Point Hudson River NERRS" lat="42.0139" lon="-73.9392"/>  NAVD datum unavailable
+id="8519461" name="Bayonne Bridge Air Gap" no data  NAVD datum unavailable
+id="8519483" name="Bergen Point West Reach" lat="40.6367" lon="-74.1417"/>  NAVD datum unavailable
+id="8519532" name="Mariners Harbor" no data  NAVD datum unavailable
+id="8530973" name="Robbins Reef" no data  NAVD datum unavailable
+id="8531680" name="Sandy Hook" lat="40.4669" lon="-74.0094"/>  NAVD datum available
+id="8534720" name="Atlantic City" lat="39.3550" lon="-74.4183"/>  NAVD datum available
+id="8536110" name="Cape May" lat="38.9678" lon="-74.9597"/>  NAVD datum available
+id="8537121" name="Ship John Shoal" lat="39.3050" lon="-75.3750"/>  NAVD datum unavailable
+id="8539094" name="Burlington, Delaware River" lat="40.0800" lon="-74.8733"/>  NAVD datum unavailable
+id="8540433" name="Marcus Hook" lat="39.8117" lon="-75.4094"/>  NAVD datum unavailable
+id="8545240" name="Philadelphia" lat="39.9333" lon="-75.1417"/>  NAVD datum available
+id="8545556" name="Ben Franklin Bridge" no data  NAVD datum unavailable
+id="8546252" name="Bridesburg" lat="39.9833" lon="-75.0750"/>  NAVD datum unavailable
+id="8548989" name="Newbold" lat="40.1373" lon="-74.7519"/>  NAVD datum unavailable
+id="8550959" name="Delaware Memorial Bridge" no data  NAVD datum unavailable
+id="8551762" name="Delaware City" lat="39.5817" lon="-75.5883"/>  NAVD datum unavailable
+id="8551910" name="Reedy Point" lat="39.5583" lon="-75.5733"/>  NAVD datum available
+id="8551911" name="Reedy Point Air Gap" no data  NAVD datum unavailable
+id="8555889" name="Brandywine Shoal Light" lat="38.9867" lon="-75.1133"/>  NAVD datum unavailable
+id="8557380" name="Lewes" lat="38.7828" lon="-75.1192"/>  NAVD datum available
+id="8570283" name="Ocean City Inlet" lat="38.3283" lon="-75.0917"/>  NAVD datum available
+id="8571421" name="Bishops Head" lat="38.2204" lon="-76.0387"/>  NAVD datum available
+id="8571892" name="Cambridge" lat="38.5742" lon="-76.0722"/>  NAVD datum available
+id="8573364" name="Tolchester Beach" lat="39.2133" lon="-76.2450"/>  NAVD datum unavailable
+id="8573927" name="Chesapeake City" lat="39.5267" lon="-75.8100"/>  NAVD datum unavailable
+id="8573928" name="Chesapeake City Air Gap" no data  NAVD datum unavailable
+id="8574680" name="Baltimore, Fort McHenry, Patapsco River" lat="39.2667" lon="-76.5783"/>  NAVD datum available
+id="8574728" name="Francis Scott Key Bridge" no data  NAVD datum unavailable
+id="8574729" name="Francis Scott Key Bridge N.E. Tower" no data  NAVD datum unavailable
+id="8574730" name="Francis Scott Key Bridge Air Gap" no data  NAVD datum unavailable
+id="8575432" name="Bay Bridge Air Gap" no data  NAVD datum unavailable
+id="8575437" name="Chesapeake Bay Bridge" no data  NAVD datum unavailable
+id="8575512" name="Annapolis" lat="38.9833" lon="-76.4816"/>  NAVD datum available
+id="8577018" name="Cove Point LNG Pier" no data  NAVD datum unavailable
+id="8577330" name="Solomons Island" lat="38.3172" lon="-76.4508"/>  NAVD datum available
+id="8578240" name="Piney Point" no data  NAVD datum unavailable
+id="8594900" name="Washington" lat="38.8733" lon="-77.0217"/>  NAVD datum available
+id="8631044" name="Wachapreague" lat="37.6078" lon="-75.6858"/>  NAVD datum available
+id="8632200" name="Kiptopeke" lat="37.1652" lon="-75.9884"/>  NAVD datum available
+id="8632837" name="Rappahannock Light" lat="37.5383" lon="-76.0150"/>  NAVD datum unavailable
+id="8635027" name="Dahlgren" lat="38.3197" lon="-77.0366"/>  NAVD datum available
+id="8635750" name="Lewisetta" lat="37.9954" lon="-76.4646"/>  NAVD datum available
+id="8636580" name="Windmill Point" lat="37.6161" lon="-76.2900"/>  NAVD datum available
+id="8637611" name="York River East Rear Range Light" no data  NAVD datum unavailable
+id="8637689" name="Yorktown USCG Training Center" lat="37.2265" lon="-76.4788"/>  NAVD datum available
+id="8638511" name="Dominion Terminal Associates" no data  NAVD datum unavailable
+id="8638595" name="South Craney Island" no data  NAVD datum unavailable
+id="8638610" name="Sewells Point" lat="36.9467" lon="-76.3300"/>  NAVD datum available
+id="8638614" name="Willoughby Degaussing Station" no data  NAVD datum unavailable
+id="8638901" name="CBBT, Chesapeake Channel" lat="37.0329" lon="-76.0833"/>  NAVD datum unavailable
+id="8638999" name="Cape Henry" lat="36.9300" lon="-76.0067"/>  NAVD datum unavailable
+id="8639348" name="Money Point" lat="36.7783" lon="-76.3017"/>  NAVD datum unavailable
+id="8651370" name="Duck" lat="36.1833" lon="-75.7467"/>  NAVD datum available
+id="8652587" name="Oregon Inlet Marina" lat="35.7950" lon="-75.5481"/>  NAVD datum available
+id="8654467" name="USCG Station Hatteras" lat="35.2086" lon="-75.7042"/>  NAVD datum available
+id="8656483" name="Beaufort, Duke Marine Lab" lat="34.7200" lon="-76.6700"/>  NAVD datum available
+id="8658120" name="Wilmington" lat="34.2275" lon="-77.9536"/>  NAVD datum available
+id="8658163" name="Wrightsville Beach" lat="34.2133" lon="-77.7867"/>  NAVD datum available
+id="8661070" name="Springmaid Pier" lat="33.6550" lon="-78.9183"/>  NAVD datum available
+id="8662245" name="Oyster Landing (N Inlet Estuary)" lat="33.3517" lon="-79.1867"/>  NAVD datum available
+id="8664753" name="Don Holt Bridge Air Gap" no data  NAVD datum unavailable
+id="8665353" name="Ravenel Bridge" no data  NAVD datum unavailable
+id="8665530" name="Charleston, Cooper River Entrance" lat="32.7808" lon="-79.9236"/>  NAVD datum available
+id="8670674" name="Talmadge Memorial Bridge" no data  NAVD datum unavailable
+id="8670870" name="Fort Pulaski" lat="32.0367" lon="-80.9017"/>  NAVD datum available
+id="8720030" name="Fernandina Beach" lat="30.6714" lon="-81.4658"/>  NAVD datum available
+id="8720215" name="Navy Fuel Depot" lat="30.4000" lon="-81.6267"/>  NAVD datum available
+id="8720218" name="Mayport (Bar Pilots Dock)" lat="30.3982" lon="-81.4279"/>  NAVD datum available
+id="8720219" name="Dames Point" lat="30.3867" lon="-81.5583"/>  NAVD datum available
+id="8720226" name="Southbank Riverwalk, St Johns River" lat="30.3200" lon="-81.6583"/>  NAVD datum available
+id="8720228" name="Little Jetties" no data  NAVD datum unavailable
+id="8720233" name="Blount Island Command" no data  NAVD datum unavailable
+id="8720245" name="Jacksonville University" no data  NAVD datum unavailable
+id="8720376" name="Dames Point Bridge Air Gap" no data  NAVD datum unavailable
+id="8721604" name="Trident Pier, Port Canaveral" lat="28.4158" lon="-80.5931"/>  NAVD datum available
+id="8722670" name="Lake Worth Pier, Atlantic Ocean" lat="26.6128" lon="-80.0342"/>  NAVD datum available
+id="8722956" name="South Port Everglades" lat="26.0817" lon="-80.1167"/>  NAVD datum available
+id="8723214" name="Virginia Key, Biscayne Bay" lat="25.7314" lon="-80.1618"/>  NAVD datum available
+id="8723970" name="Vaca Key, Florida Bay" lat="24.7110" lon="-81.1065"/>  NAVD datum available
+id="8724580" name="Key West" lat="24.5508" lon="-81.8081"/>  NAVD datum available
+id="8725110" name="Naples, Gulf of Mexico" lat="26.1317" lon="-81.8075"/>  NAVD datum available
+id="8725520" name="Fort Myers, Caloosahatchee River" lat="26.6477" lon="-81.8712"/>  NAVD datum available
+id="8726384" name="Port Manatee" lat="27.6383" lon="-82.5625"/>  NAVD datum available
+id="8726412" name="Middle Tampa Bay" no data  NAVD datum unavailable
+id="8726520" name="St. Petersburg, Tampa Bay" lat="27.7606" lon="-82.6269"/>  NAVD datum available
+id="8726524" name="Gadsden Cut, Tampa Bay" no data  NAVD datum unavailable
+id="8726607" name="Old Port Tampa" lat="27.8578" lon="-82.5528"/>  NAVD datum unavailable
+id="8726667" name="Mckay Bay Entrance" lat="27.9133" lon="-82.4250"/>  NAVD datum available
+id="8726679" name="East Bay Causeway" no data  NAVD datum unavailable
+id="8726694" name="TPA Cruise Terminal 2" no data  NAVD datum unavailable
+id="8726724" name="Clearwater Beach" lat="27.9783" lon="-82.8317"/>  NAVD datum available
+id="8727520" name="Cedar Key" lat="29.1350" lon="-83.0317"/>  NAVD datum available
+id="8728690" name="Apalachicola" lat="29.7267" lon="-84.9817"/>  NAVD datum available
+id="8729108" name="Panama City" lat="30.1523" lon="-85.6669"/>  NAVD datum available
+id="8729210" name="Panama City Beach" lat="30.2133" lon="-85.8783"/>  NAVD datum available
+id="8729840" name="Pensacola" lat="30.4044" lon="-87.2112"/>  NAVD datum available
+id="8732828" name="Weeks Bay, Mobile Bay" lat="30.4169" lon="-87.8254"/>  NAVD datum unavailable
+id="8734673" name="Fort Morgan" no data  NAVD datum unavailable
+id="8735180" name="Dauphin Island" lat="30.2500" lon="-88.0750"/>  NAVD datum available
+id="8735391" name="Dog River Bridge" lat="30.5652" lon="-88.0880"/>  NAVD datum unavailable
+id="8735523" name="East Fowl River Bridge" lat="30.4436" lon="-88.1139"/>  NAVD datum available
+id="8736163" name="Middle Bay Port, Mobile Bay" no data  NAVD datum unavailable
+id="8736897" name="Coast Guard Sector Mobile" lat="30.6483" lon="-88.0583"/>  NAVD datum available
+id="8737005" name="Pinto Island" no data  NAVD datum unavailable
+id="8737048" name="Mobile State Docks" lat="30.7083" lon="-88.0433"/>  NAVD datum available
+id="8737138" name="Chickasaw Creek" lat="30.7819" lon="-88.0736"/>  NAVD datum unavailable
+id="8738043" name="West Fowl River Bridge" lat="30.3766" lon="-88.1586"/>  NAVD datum available
+id="8739803" name="Bayou La Batre Bridge" lat="30.4057" lon="-88.2477"/>  NAVD datum available
+id="8740166" name="Grand Bay NERR, Mississippi Sound" lat="30.4132" lon="-88.4029"/>  NAVD datum available
+id="8741003" name="Petit Bois Island, Port of Pascagoula" no data  NAVD datum unavailable
+id="8741533" name="Pascagoula NOAA Lab" lat="30.3678" lon="-88.5631"/>  NAVD datum available
+id="8747437" name="Bay Waveland Yacht Club" lat="30.3250" lon="-89.3250"/>  NAVD datum available
+id="8760721" name="Pilottown" lat="29.1783" lon="-89.2583"/>  NAVD datum unavailable
+id="8760922" name="Pilots Station East, S.W. Pass" lat="28.9322" lon="-89.4075"/>  NAVD datum unavailable
+id="8761305" name="Shell Beach" lat="29.8681" lon="-89.6732"/>  NAVD datum available
+id="8761724" name="Grand Isle" lat="29.2633" lon="-89.9567"/>  NAVD datum unavailable
+id="8761847" name="Crescent City Air Gap" no data  NAVD datum unavailable
+id="8761927" name="New Canal Station" lat="30.0272" lon="-90.1133"/>  NAVD datum unavailable
+id="8761955" name="Carrollton" no data  NAVD datum unavailable
+id="8762002" name="Huey Long Bridge Air Gap" no data  NAVD datum unavailable
+id="8762075" name="Port Fourchon, Belle Pass" lat="29.1142" lon="-90.1993"/>  NAVD datum unavailable
+id="8762482" name="West Bank 1, Bayou Gauche" no data  NAVD datum available
+id="8762483" name="I-10 Bonnet Carre Floodway" lat="30.0679" lon="-90.3900"/>  NAVD datum unavailable
+id="8762484" name="Frenier Landing" no data  NAVD datum unavailable
+id="8764044" name="Berwick, Atchafalaya River" lat="29.6675" lon="-91.2376"/>  NAVD datum unavailable
+id="8764227" name="LAWMA, Amerada Pass" lat="29.4496" lon="-91.3381"/>  NAVD datum available
+id="8764314" name="Eugene Island, North of , Gulf of Mexico" lat="29.3675" lon="-91.3839"/>  NAVD datum unavailable
+id="8764401" name="Atchafalaya Bar Channel" no data  NAVD datum unavailable
+id="8766072" name="Freshwater Canal Locks" lat="29.5517" lon="-92.3052"/>  NAVD datum unavailable
+id="8767816" name="Lake Charles" lat="30.2236" lon="-93.2217"/>  NAVD datum unavailable
+id="8767931" name="Lake Charles I-210 Bridge Air Gap" no data  NAVD datum unavailable
+id="8767961" name="Bulk Terminal" lat="30.1902" lon="-93.3008"/>  NAVD datum unavailable
+id="8768094" name="Calcasieu Pass" lat="29.7682" lon="-93.3429"/>  NAVD datum available
+id="8770475" name="Port Arthur" lat="29.8671" lon="-93.9310"/>  NAVD datum available
+id="8770520" name="Rainbow Bridge" lat="29.9800" lon="-93.8817"/>  NAVD datum available
+id="8770570" name="Sabine Pass North" lat="29.7284" lon="-93.8701"/>  NAVD datum unavailable
+id="8770613" name="Morgans Point, Barbours Cut" lat="29.6817" lon="-94.9850"/>  NAVD datum available
+id="8770777" name="Manchester" lat="29.7262" lon="-95.2658"/>  NAVD datum unavailable
+id="8770808" name="High Island" lat="29.5947" lon="-94.3903"/>  NAVD datum unavailable
+id="8770822" name="Texas Point, Sabine Pass" lat="29.6894" lon="-93.8419"/>  NAVD datum unavailable
+id="8770971" name="Rollover Pass" lat="29.5156" lon="-94.5106"/>  NAVD datum available
+id="8771013" name="Eagle Point, Galveston Bay" lat="29.4800" lon="-94.9183"/>  NAVD datum unavailable
+id="8771341" name="Galveston Bay Entrance, North Jetty" lat="29.3573" lon="-94.7248"/>  NAVD datum unavailable
+id="8771450" name="Galveston Pier 21" lat="29.3100" lon="-94.7933"/>  NAVD datum available
+id="8771486" name="Galveston Railroad Bridge" lat="29.3026" lon="-94.8971"/>  NAVD datum available
+id="8771972" name="San Luis Pass" lat="29.0810" lon="-95.1313"/>  NAVD datum available
+id="8772447" name="Freeport" lat="28.9433" lon="-95.3025"/>  NAVD datum unavailable
+id="8772471" name="Freeport SPIP, Freeport Harbor" lat="28.9357" lon="-95.2942"/>  NAVD datum unavailable
+id="8772985" name="Sargent" lat="28.7714" lon="-95.6172"/>  NAVD datum unavailable
+id="8773037" name="Seadrift" lat="28.4069" lon="-96.7124"/>  NAVD datum available
+id="8773146" name="Matagorda City" lat="28.7101" lon="-95.9140"/>  NAVD datum unavailable
+id="8773259" name="Port Lavaca" lat="28.6406" lon="-96.6098"/>  NAVD datum unavailable
+id="8773701" name="Port O'Connor" lat="28.4459" lon="-96.3956"/>  NAVD datum unavailable
+id="8773767" name="Matagorda Bay Entrance Channel" lat="28.4269" lon="-96.3301"/>  NAVD datum unavailable
+id="8774230" name="Aransas Wildlife Refuge" lat="28.2283" lon="-96.7950"/>  NAVD datum unavailable
+id="8774770" name="Rockport" lat="28.0217" lon="-97.0467"/>  NAVD datum available
+id="8775237" name="Port Aransas" lat="27.8397" lon="-97.0725"/>  NAVD datum available
+id="8775241" name="Aransas, Aransas Pass" lat="27.8366" lon="-97.0391"/>  NAVD datum unavailable
+id="8775244" name="Nueces Bay" lat="27.8328" lon="-97.4859"/>  NAVD datum unavailable
+id="8775296" name="USS Lexington, Corpus Christi Bay" lat="27.8149" lon="-97.3892"/>  NAVD datum available
+id="8775792" name="Packery Channel" lat="27.6333" lon="-97.2367"/>  NAVD datum available
+id="8775870" name="Bob Hall Pier, Corpus Christi" lat="27.5800" lon="-97.2167"/>  NAVD datum available
+id="8776139" name="S. Bird Island" no data  NAVD datum available
+id="8776604" name="Baffin Bay" no data  NAVD datum available
+id="8777812" name="Rincon Del San Jose" no data  NAVD datum available
+id="8778490" name="Port Mansfield" no data  NAVD datum unavailable
+id="8779280" name="Realitos Peninsula" lat="26.2624" lon="-97.2853"/>  NAVD datum unavailable
+id="8779748" name="South Padre Island CG Station" lat="26.0731" lon="-97.1675"/>  NAVD datum available
+id="8779749" name="SPI Brazos Santiago" lat="26.0674" lon="-97.1548"/>  NAVD datum unavailable
+id="8779770" name="Port Isabel" lat="26.0612" lon="-97.2155"/>  NAVD datum available
+id="9014070" name="Algonac" no data  NAVD datum unavailable
+id="9014080" name="St. Clair State Police" no data  NAVD datum unavailable
+id="9014087" name="Dry Dock" no data  NAVD datum unavailable
+id="9014090" name="Mouth of the Black River" no data  NAVD datum unavailable
+id="9014096" name="Dunn Paper" no data  NAVD datum unavailable
+id="9014098" name="Fort Gratiot" no data  NAVD datum unavailable
+id="9034052" name="St Clair Shores" no data  NAVD datum unavailable
+id="9044020" name="Gibraltar" no data  NAVD datum unavailable
+id="9044030" name="Wyandotte" no data  NAVD datum unavailable
+id="9044036" name="Fort Wayne" no data  NAVD datum unavailable
+id="9044049" name="Windmill Point" no data  NAVD datum unavailable
+id="9052000" name="Cape Vincent" no data  NAVD datum unavailable
+id="9052030" name="Oswego" no data  NAVD datum unavailable
+id="9052058" name="Rochester" no data  NAVD datum unavailable
+id="9052076" name="Olcott" no data  NAVD datum unavailable
+id="9063007" name="Ashland Ave" no data  NAVD datum unavailable
+id="9063009" name="American Falls" no data  NAVD datum unavailable
+id="9063012" name="Niagara Intake" no data  NAVD datum unavailable
+id="9063020" name="Buffalo" no data  NAVD datum unavailable
+id="9063028" name="Sturgeon Point" no data  NAVD datum unavailable
+id="9063038" name="Erie, Lake Erie" no data  NAVD datum unavailable
+id="9063053" name="Fairport" no data  NAVD datum unavailable
+id="9063063" name="Cleveland" no data  NAVD datum unavailable
+id="9063079" name="Marblehead" no data  NAVD datum unavailable
+id="9063085" name="Toledo" no data  NAVD datum unavailable
+id="9063090" name="Fermi Power Plant" no data  NAVD datum unavailable
+id="9075002" name="Lakeport" no data  NAVD datum unavailable
+id="9075014" name="Harbor Beach" no data  NAVD datum unavailable
+id="9075035" name="Essexville" no data  NAVD datum unavailable
+id="9075065" name="Alpena" no data  NAVD datum unavailable
+id="9075080" name="Mackinaw City" no data  NAVD datum unavailable
+id="9075099" name="De Tour Village" no data  NAVD datum unavailable
+id="9076024" name="Rock Cut" no data  NAVD datum unavailable
+id="9076027" name="West Neebish Island" no data  NAVD datum unavailable
+id="9076033" name="Little Rapids" no data  NAVD datum unavailable
+id="9076060" name="U.S. Slip" no data  NAVD datum unavailable
+id="9076070" name="S.W. Pier, St. Marys River" no data  NAVD datum unavailable
+id="9087023" name="Ludington" no data  NAVD datum unavailable
+id="9087031" name="Holland" no data  NAVD datum unavailable
+id="9087044" name="Calumet Harbor" no data  NAVD datum unavailable
+id="9087057" name="Milwaukee" no data  NAVD datum unavailable
+id="9087068" name="Kewaunee, Lake Michigan" no data  NAVD datum unavailable
+id="9087069" name="Kewaunee MET" no data  NAVD datum unavailable
+id="9087072" name="Sturgeon Bay Canal" no data  NAVD datum unavailable
+id="9087079" name="Green Bay" no data  NAVD datum unavailable
+id="9087088" name="Menominee" no data  NAVD datum unavailable
+id="9087096" name="Port Inland" no data  NAVD datum unavailable
+id="9099004" name="Point Iroquois" no data  NAVD datum unavailable
+id="9099018" name="Marquette C.G." no data  NAVD datum unavailable
+id="9099044" name="Ontonagon" no data  NAVD datum unavailable
+id="9099064" name="Duluth" no data  NAVD datum unavailable
+id="9099090" name="Grand Marais, Lake Superior" no data  NAVD datum unavailable
+id="9410170" name="San Diego, San Diego Bay" lat="32.7142" lon="-117.1736"/>  NAVD datum available
+id="9410230" name="La Jolla" lat="32.8669" lon="-117.2571"/>  NAVD datum available
+id="9410647" name="Angels Gate" no data  NAVD datum unavailable
+id="9410660" name="Los Angeles" lat="33.7199" lon="-118.2729"/>  NAVD datum available
+id="9410665" name="Los Angeles Pier J" no data  NAVD datum unavailable
+id="9410666" name="Los Angeles Pier 400" no data  NAVD datum unavailable
+id="9410670" name="Los Angeles Pier F" no data  NAVD datum unavailable
+id="9410676" name="Vincent Thomas Bridge" no data  NAVD datum unavailable
+id="9410689" name="Gerald Desmond Bridge Air Gap" no data  NAVD datum unavailable
+id="9410690" name="Los Angeles Berth 161" no data  NAVD datum unavailable
+id="9410691" name="Los Angeles Badger Avenue Bridge" no data  NAVD datum unavailable
+id="9410692" name="Los Angeles Pier S" no data  NAVD datum unavailable
+id="9410840" name="Santa Monica" lat="34.0083" lon="-118.5000"/>  NAVD datum available
+id="9411340" name="Santa Barbara" lat="34.4031" lon="-119.6928"/>  NAVD datum available
+id="9411406" name="Oil Platform Harvest" lat="34.4692" lon="-120.6819"/>  NAVD datum unavailable
+id="9412110" name="Port San Luis" lat="35.1688" lon="-120.7542"/>  NAVD datum available
+id="9413450" name="Monterey" lat="36.6050" lon="-121.8881"/>  NAVD datum available
+id="9414290" name="San Francisco" lat="37.8063" lon="-122.4659"/>  NAVD datum available
+id="9414296" name="Pier 17, San Francisco Bay" no data  NAVD datum unavailable
+id="9414304" name="San Francisco-Oakland Bay Bridge Air Gap" no data  NAVD datum unavailable
+id="9414311" name="San Francisco Pier 1" no data  NAVD datum unavailable
+id="9414523" name="Redwood City" lat="37.5067" lon="-122.2100"/>  NAVD datum unavailable
+id="9414575" name="Coyote Creek" lat="37.4650" lon="-122.0230"/>  NAVD datum unavailable
+id="9414750" name="Alameda" lat="37.7717" lon="-122.3000"/>  NAVD datum available
+id="9414763" name="Oakland Berth 67" no data  NAVD datum unavailable
+id="9414769" name="Oakland Middle Harbor" no data  NAVD datum unavailable
+id="9414776" name="Oakland Berth 34" no data  NAVD datum unavailable
+id="9414797" name="Oakland Berth 38" no data  NAVD datum unavailable
+id="9414847" name="Point Potrero Richmond" no data  NAVD datum unavailable
+id="9414863" name="Richmond" lat="37.9230" lon="-122.4096"/>  NAVD datum unavailable
+id="9414958" name="Bolinas, Bolinas Lagoon" lat="37.9078" lon="-122.6786"/>  NAVD datum available
+id="9415020" name="Point Reyes" lat="37.9961" lon="-122.9767"/>  NAVD datum available
+id="9415102" name="Martinez-Amorco Pier" lat="38.0346" lon="-122.1252"/>  NAVD datum unavailable
+id="9415115" name="Pittsburg, Suisun Bay" no data  NAVD datum unavailable
+id="9415118" name="Union Pacific Rail Road Bridge" no data  NAVD datum unavailable
+id="9415141" name="Davis Point" no data  NAVD datum unavailable
+id="9415144" name="Port Chicago" lat="38.0560" lon="-122.0395"/>  NAVD datum available
+id="9416841" name="Arena Cove" lat="38.9146" lon="-123.7111"/>  NAVD datum available
+id="9418767" name="North Spit" lat="40.7663" lon="-124.2172"/>  NAVD datum available
+id="9418768" name="NORTH JETTY LNDG.,HUMBOLDT BAY" no data  NAVD datum unavailable
+id="9419750" name="Crescent City" lat="41.7450" lon="-124.1830"/>  NAVD datum available
+id="9431647" name="Port Orford" lat="42.7390" lon="-124.4983"/>  NAVD datum available
+id="9432780" name="Charleston" lat="43.3450" lon="-124.3220"/>  NAVD datum available
+id="9435380" name="South Beach" lat="44.6250" lon="-124.0430"/>  NAVD datum available
+id="9437540" name="Garibaldi" lat="45.5545" lon="-123.9189"/>  NAVD datum unavailable
+id="9439040" name="Astoria" lat="46.2073" lon="-123.7683"/>  NAVD datum available
+id="9439099" name="Wauna" lat="46.1617" lon="-123.4089"/>  NAVD datum unavailable
+id="9439201" name="St Helens" lat="45.8633" lon="-122.7962"/>  NAVD datum unavailable
+id="9440083" name="Vancouver" lat="45.6317" lon="-122.6970"/>  NAVD datum unavailable
+id="9440422" name="Longview" lat="46.1061" lon="-122.9542"/>  NAVD datum unavailable
+id="9440569" name="Skamokawa" lat="46.2667" lon="-123.4520"/>  NAVD datum unavailable
+id="9440581" name="Cape Disappointment" lat="46.3000" lon="-124.0000"/>  NAVD datum available
+id="9440910" name="Toke Point" lat="46.7075" lon="-123.9669"/>  NAVD datum available
+id="9441102" name="Westport" lat="46.9043" lon="-124.1051"/>  NAVD datum unavailable
+id="9442396" name="La Push, Quillayute River" lat="47.9133" lon="-124.6369"/>  NAVD datum unavailable
+id="9443090" name="Neah Bay" lat="48.3703" lon="-124.6019"/>  NAVD datum available
+id="9444090" name="Port Angeles" lat="48.1247" lon="-123.4411"/>  NAVD datum available
+id="9444900" name="Port Townsend" lat="48.1129" lon="-122.7595"/>  NAVD datum unavailable
+id="9446482" name="Tacoma MET" no data  NAVD datum unavailable
+id="9446484" name="Tacoma" lat="47.2667" lon="-122.4133"/>  NAVD datum available
+id="9447130" name="Seattle" lat="47.6026" lon="-122.3393"/>  NAVD datum available
+id="9449419" name="Cherry Point South Dock" no data  NAVD datum unavailable
+id="9449424" name="Cherry Point" lat="48.8633" lon="-122.7580"/>  NAVD datum unavailable
+id="9449427" name="Cherry Point North Dock" no data  NAVD datum unavailable
+id="9449880" name="Friday Harbor" lat="48.5453" lon="-123.0129"/>  NAVD datum unavailable
+id="9450460" name="Ketchikan" lat="55.3318" lon="-131.6262"/>  NAVD datum unavailable
+id="9451054" name="Port Alexander" lat="56.2467" lon="-134.6470"/>  NAVD datum available
+id="9451600" name="Sitka" lat="57.0517" lon="-135.3420"/>  NAVD datum unavailable
+id="9452210" name="Juneau" lat="58.2983" lon="-134.4120"/>  NAVD datum unavailable
+id="9452400" name="Skagway, Taiya Inlet" lat="59.4500" lon="-135.3270"/>  NAVD datum unavailable
+id="9452634" name="Elfin Cove" lat="58.1947" lon="-136.3469"/>  NAVD datum unavailable
+id="9453220" name="Yakutat, Yakutat Bay" lat="59.5485" lon="-139.7334"/>  NAVD datum available
+id="9454050" name="Cordova" lat="60.5583" lon="-145.7550"/>  NAVD datum unavailable
+id="9454240" name="Valdez" lat="61.1250" lon="-146.3620"/>  NAVD datum unavailable
+id="9455090" name="Seward" lat="60.1200" lon="-149.4267"/>  NAVD datum unavailable
+id="9455500" name="Seldovia" lat="59.4405" lon="-151.7199"/>  NAVD datum unavailable
+id="9455760" name="Nikiski" lat="60.6833" lon="-151.3980"/>  NAVD datum available
+id="9455920" name="Anchorage" lat="61.2375" lon="-149.8904"/>  NAVD datum available
+id="9457292" name="Kodiak Island" lat="57.7303" lon="-152.5139"/>  NAVD datum available
+id="9457804" name="Alitak" lat="56.8974" lon="-154.2480"/>  NAVD datum unavailable
+id="9459450" name="Sand Point" lat="55.3367" lon="-160.5020"/>  NAVD datum unavailable
+id="9459881" name="King Cove" lat="55.0599" lon="-162.3261"/>  NAVD datum unavailable
+id="9461380" name="Adak Island" lat="51.8633" lon="-176.6320"/>  NAVD datum available
+id="9461710" name="Atka" lat="52.2320" lon="-174.1726"/>  NAVD datum available
+id="9462450" name="Nikolski" lat="52.9406" lon="-168.8713"/>  NAVD datum available
+id="9462620" name="Unalaska" lat="53.8792" lon="-166.5403"/>  NAVD datum available
+id="9464212" name="Village Cove, St Paul Island" lat="57.1253" lon="-170.2852"/>  NAVD datum available
+id="9468333" name="Unalakleet" lat="63.8750" lon="-160.7880"/>  NAVD datum available
+id="9468756" name="Nome, Norton Sound" lat="64.4946" lon="-165.4396"/>  NAVD datum available
+id="9491094" name="Red Dog Dock" lat="67.5758" lon="-164.0644"/>  NAVD datum unavailable
+id="9497645" name="Prudhoe Bay" lat="70.4114" lon="-148.5318"/>  NAVD datum unavailable
+id="9751364" name="Christiansted Harbor, St Croix" lat="17.7477" lon="-64.6984"/>  NAVD datum available
+id="9751381" name="Lameshur Bay, St John" lat="18.3182" lon="-64.7242"/>  NAVD datum available
+id="9751401" name="Lime Tree Bay" lat="17.6947" lon="-64.7538"/>  NAVD datum available
+id="9751639" name="Charlotte Amalie" lat="18.3358" lon="-64.9200"/>  NAVD datum available
+id="9752235" name="Culebra" lat="18.3009" lon="-65.3025"/>  NAVD datum available
+id="9752619" name="Isabel Segunda, Vieques Island" lat="18.1525" lon="-65.4438"/>  NAVD datum unavailable
+id="9752695" name="Esperanza, Vieques Island" lat="18.0939" lon="-65.4714"/>  NAVD datum available
+id="9753216" name="Fajardo" lat="18.3352" lon="-65.6311"/>  NAVD datum unavailable
+id="9754228" name="Yabucoa Harbor" lat="18.0551" lon="-65.8330"/>  NAVD datum unavailable
+id="9755371" name="San Juan, La Puntilla, San Juan Bay" lat="18.4592" lon="-66.1164"/>  NAVD datum available
+id="9757809" name="Arecibo" lat="18.4805" lon="-66.7024"/>  NAVD datum unavailable
+id="9759110" name="Magueyes Island" lat="17.9701" lon="-67.0464"/>  NAVD datum available
+id="9759394" name="Mayaguez" lat="18.2189" lon="-67.1625"/>  NAVD datum available
+id="9759938" name="Mona Island" lat="18.0899" lon="-67.9385"/>  NAVD datum available
+id="9761115" name="Barbuda" lat="17.5908" lon="-61.8206"/>  NAVD datum unavailable
