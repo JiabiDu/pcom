@@ -4,6 +4,7 @@ from pylib import *
 import json
 from scipy.stats import gaussian_kde
 
+#%% schism related
 def gen_bpfile2(lons,lats,stations,fname='station.bp',cmt='station.bp',hgrid='hgrid.gr3',vgrid='vgrid.in'):
     '''
     gen bpfiles for extracting the vertical profiles at certain stations
@@ -52,7 +53,8 @@ def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
         ist+=1
         f.write('{} {:.10f} {:.10f} {:.4f} !{}\n'.format(ist,lon,lat,dep,station))
     f.close()
-    
+
+#%% mode-observaiton comparison related
 def pair_data(x1,y1,x2,y2,hw=0.2/24):
     ''' 
     pair data within a certain of time window
@@ -78,7 +80,8 @@ def kde_plot(x,y,ms=1):
     x, y, z = x[idx], y[idx], z[idx]
 
     scatter(x, y, c=z, s=ms)
-    
+
+#%% download data
 def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reRead=False,sdir=None, reDownload=False):
     y1=num2date(datenum(StartT)).year; y2=num2date(datenum(EndT)-1/24).year
     if sdir is None: sdir=f'usgs_{y1}_{y2}'
@@ -223,159 +226,7 @@ def get_usgs_temp(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
         print('save data into '+sname+'.npz')
         savez(sname,S)
         
-def get_daily_mean(times,flow,lpf=False):
-    #get daily mean
-    if lpf:
-        print('low-pass filter with cut-off frequency of 1/(7*24)')
-        flow=lpfilt(flow,median(diff(times))*24,1/(7*24))
-    # use low pass filter 
-    print('in get daily mean')
-    nrec=0
-    sumval=0
-    preday=floor(times[0])
-    newtime,newflow=[],[]
-    for itime,iflow in zip(times,flow):
-        if itime<preday+1:
-            nrec+=1
-            sumval+=iflow
-        else:
-            newtime.append(preday)
-            newflow.append(sumval/nrec)
-            preday=floor(itime)
-            nrec=1
-            sumval=iflow
-    newtime=array(newtime)+0.5
-    newflow=array(newflow)
-    return newtime,newflow
 
-def remove_spike(times,data,ds=2,hw=5,rmnan=True,inter_spike=False):
-    #ds: delta standard deviation
-    #hw: half window
-    #inter_spike: replace spiking values with the mean over [hw,hw]
-    newdata=data.copy()
-    newtime=times.copy()
-    for m,itime in enumerate(times):
-        fp=(abs(times-itime)<=hw)*(times!=itime)
-        if sum(fp)<hw: continue
-        tmp=data[fp]
-        idata=data[m]
-        if abs(idata-tmp.mean())>ds*tmp.std():
-            newdata[m]=nan
-            if inter_spike: #there will be no nan value
-                newdata[m]=tmp.mean()
-    if rmnan: #remove nan
-        fp=isnan(newdata)
-        newdata=newdata[~fp]
-        newtime=newtime[~fp]
-    return newtime,newdata
-def linear_lag_analysis(time1,flow1,time2,flow2,daily=True,shiftings=arange(-5,6),degree=4):
-    from sklearn.linear_model import LinearRegression
-    from sklearn.preprocessing import PolynomialFeatures
-    print('in linear_lag_analysis')
-    if daily and median(diff(time1))!=1: time1,flow1=get_daily_mean(time1,flow1)
-    if daily and median(diff(time2))!=1: time2,flow2=get_daily_mean(time2,flow2)
-    best=zdata()
-    best.R=0
-    time0=time2.copy()
-    best.pair2,best.pair1=[],[]
-    best.r2=0
-    for ishifting in shiftings:
-        time2=time0+ishifting
-        # find the pair
-        pair1,pair2=[],[]
-        iloc=0
-        for m,itime1 in enumerate(time1):
-            while(iloc<len(time2) and time2[iloc]<itime1):
-                iloc+=1
-            if iloc>=len(time2): break
-            if time2[iloc]==itime1 and not isnan(flow1[m]) and not isnan(flow2[iloc]):
-                pair1.append(flow1[m])
-                pair2.append(flow2[iloc])
-        pair1,pair2=array(pair1),array(pair2)
-        if len(pair2)==0: print('no paired data')
-        S=get_stat(pair1,pair2)
-        print(S.R)
-        if S.R>best.R:
-            print(S.R,ishifting)
-            best.R=S.R
-            best.shifting=ishifting
-            best.pair1=pair1
-            best.pair2=pair2
-    if len(best.pair2)==0: return best
-    x=best.pair2.reshape(-1,1)
-    y=best.pair1
-    x_pred=arange(min(x),max(x)).reshape(-1,1)
-    transformer = PolynomialFeatures(degree=degree, include_bias=False)
-    transformer.fit(x)
-    x_ = transformer.transform(x)
-    model = LinearRegression().fit(x_, y)
-    r_sq = model.score(x_, y)
-    y_pred = model.predict(transformer.transform(x_pred))
-    best.transformer=transformer
-    best.model=model
-    best.r2=r_sq
-    best.x_pred=x_pred
-    best.y_pred=y_pred
-    return best
-def seasonal_impose(time1,flow1,mtime,mmean,mstd,mmin,mmax,ds=None):
-    #limit values to the lower and upper bound based on seasonal cycle
-    #ds: if ds is not None, lower and upper bound will be mean+-ds*std; otherwise the lowe and upper will be min and max at each month
-    y1=num2date(time1.min()).year
-    y2=num2date(time2.max()).year
-    ip=0
-    flow2=flow1.copy()
-    mtime2,mmean2,mstd2,mmin2,mmax2=[],[],[],[],[]
-    for iyear in arange(y1,y2+1):
-        for imon in arange(1,13):
-            mtime2.append(datenum(iyear,imon,15))
-            mmean2.append(mmean[imon-1])
-            mstd2.append(mstd[imon-1])
-            mmax2.append(mmax[imon-1])
-            mmin2.append(mmin[imon-1])
-    mmean3=interp(time1,mtime2,mmean2)
-    mstd3=interp(time1,mtime2,mstd2)
-    mmin3=interp(time1,mtime2,mmin2)
-    mmax3=interp(time1,mtime2,mmax2)
-    for m,flowi in enumerate(flow1):
-        flow2[m]=min(mmax3[m],max(flowi,mmin3[m]))
-        if not ds is None:
-            flow2[m]=min(mmean3[m]+ds*mstd3[m],max(flowi,mmean3[m]-ds*mstd3[m]))
-    if not ds is None:
-        mlower=mmean3-ds*mstd3
-        mupper=mmean3+ds*mstd3
-    else:
-        mlower=mmin3
-        mupper=mmax3
-    return time1,flow2,mlower,mupper
-            
-def find_missing_time(time1,time2,dt=0.1,block=0):
-    #find those in time2 but not in time1
-    #dt: not used noww
-    #block: if block is not zero, only missing value within a continuous block will be regarded as missing time; 
-    #       
-    missing_time=[]
-    for itime in time2:
-        #if sum(abs(itime-time1)<dt)==0:
-        if not itime in time1:
-            missing_time.append(itime)
-    #only return those missing one for a continuous block; remove thos scatter ones
-    
-    if block>0:
-        difft=time2[1]-time2[0]
-        if difft<0: ppppp
-        ntime=missing_time.copy()
-        for m,itime in enumerate(missing_time):
-            if m==0: ibegin=0; iend=0; continue
-            if abs(itime-missing_time[m-1]-difft)<0.1*difft:
-                iend=m
-            else:
-                if iend-ibegin<block:
-                    del ntime[ibegin:iend+1]
-                ibegin=m
-        print('before and after removing scattered one: {} {}'.format(len(missing_time),len(ntime)))
-        missing_time=ntime
-    
-    return missing_time
 def fill_usgs_flow_v2(S=None,begin_time=datenum(2007,1,1),end_time=datenum(2009,1,1),sname=None,recal=False):
     '''
     Get gap gree usgs flow data, use ltm to interp missing one
@@ -633,6 +484,164 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
         savez(sname,S)
         print(f'data saved into {sname}.npz')
 
+
+
+#%% data processing
+def get_daily_mean(times,flow,lpf=False):
+    #get daily mean
+    if lpf:
+        print('low-pass filter with cut-off frequency of 1/(7*24)')
+        flow=lpfilt(flow,median(diff(times))*24,1/(7*24))
+    # use low pass filter 
+    print('in get daily mean')
+    nrec=0
+    sumval=0
+    preday=floor(times[0])
+    newtime,newflow=[],[]
+    for itime,iflow in zip(times,flow):
+        if itime<preday+1:
+            nrec+=1
+            sumval+=iflow
+        else:
+            newtime.append(preday)
+            newflow.append(sumval/nrec)
+            preday=floor(itime)
+            nrec=1
+            sumval=iflow
+    newtime=array(newtime)+0.5
+    newflow=array(newflow)
+    return newtime,newflow
+
+def remove_spike(times,data,ds=2,hw=5,rmnan=True,inter_spike=False):
+    #ds: delta standard deviation
+    #hw: half window
+    #inter_spike: replace spiking values with the mean over [hw,hw]
+    newdata=data.copy()
+    newtime=times.copy()
+    for m,itime in enumerate(times):
+        fp=(abs(times-itime)<=hw)*(times!=itime)
+        if sum(fp)<hw: continue
+        tmp=data[fp]
+        idata=data[m]
+        if abs(idata-tmp.mean())>ds*tmp.std():
+            newdata[m]=nan
+            if inter_spike: #there will be no nan value
+                newdata[m]=tmp.mean()
+    if rmnan: #remove nan
+        fp=isnan(newdata)
+        newdata=newdata[~fp]
+        newtime=newtime[~fp]
+    return newtime,newdata
+def linear_lag_analysis(time1,flow1,time2,flow2,daily=True,shiftings=arange(-5,6),degree=4):
+    from sklearn.linear_model import LinearRegression
+    from sklearn.preprocessing import PolynomialFeatures
+    print('in linear_lag_analysis')
+    if daily and median(diff(time1))!=1: time1,flow1=get_daily_mean(time1,flow1)
+    if daily and median(diff(time2))!=1: time2,flow2=get_daily_mean(time2,flow2)
+    best=zdata()
+    best.R=0
+    time0=time2.copy()
+    best.pair2,best.pair1=[],[]
+    best.r2=0
+    for ishifting in shiftings:
+        time2=time0+ishifting
+        # find the pair
+        pair1,pair2=[],[]
+        iloc=0
+        for m,itime1 in enumerate(time1):
+            while(iloc<len(time2) and time2[iloc]<itime1):
+                iloc+=1
+            if iloc>=len(time2): break
+            if time2[iloc]==itime1 and not isnan(flow1[m]) and not isnan(flow2[iloc]):
+                pair1.append(flow1[m])
+                pair2.append(flow2[iloc])
+        pair1,pair2=array(pair1),array(pair2)
+        if len(pair2)==0: print('no paired data')
+        S=get_stat(pair1,pair2)
+        print(S.R)
+        if S.R>best.R:
+            print(S.R,ishifting)
+            best.R=S.R
+            best.shifting=ishifting
+            best.pair1=pair1
+            best.pair2=pair2
+    if len(best.pair2)==0: return best
+    x=best.pair2.reshape(-1,1)
+    y=best.pair1
+    x_pred=arange(min(x),max(x)).reshape(-1,1)
+    transformer = PolynomialFeatures(degree=degree, include_bias=False)
+    transformer.fit(x)
+    x_ = transformer.transform(x)
+    model = LinearRegression().fit(x_, y)
+    r_sq = model.score(x_, y)
+    y_pred = model.predict(transformer.transform(x_pred))
+    best.transformer=transformer
+    best.model=model
+    best.r2=r_sq
+    best.x_pred=x_pred
+    best.y_pred=y_pred
+    return best
+def seasonal_impose(time1,flow1,mtime,mmean,mstd,mmin,mmax,ds=None):
+    #limit values to the lower and upper bound based on seasonal cycle
+    #ds: if ds is not None, lower and upper bound will be mean+-ds*std; otherwise the lowe and upper will be min and max at each month
+    y1=num2date(time1.min()).year
+    y2=num2date(time2.max()).year
+    ip=0
+    flow2=flow1.copy()
+    mtime2,mmean2,mstd2,mmin2,mmax2=[],[],[],[],[]
+    for iyear in arange(y1,y2+1):
+        for imon in arange(1,13):
+            mtime2.append(datenum(iyear,imon,15))
+            mmean2.append(mmean[imon-1])
+            mstd2.append(mstd[imon-1])
+            mmax2.append(mmax[imon-1])
+            mmin2.append(mmin[imon-1])
+    mmean3=interp(time1,mtime2,mmean2)
+    mstd3=interp(time1,mtime2,mstd2)
+    mmin3=interp(time1,mtime2,mmin2)
+    mmax3=interp(time1,mtime2,mmax2)
+    for m,flowi in enumerate(flow1):
+        flow2[m]=min(mmax3[m],max(flowi,mmin3[m]))
+        if not ds is None:
+            flow2[m]=min(mmean3[m]+ds*mstd3[m],max(flowi,mmean3[m]-ds*mstd3[m]))
+    if not ds is None:
+        mlower=mmean3-ds*mstd3
+        mupper=mmean3+ds*mstd3
+    else:
+        mlower=mmin3
+        mupper=mmax3
+    return time1,flow2,mlower,mupper
+            
+def find_missing_time(time1,time2,dt=0.1,block=0):
+    #find those in time2 but not in time1
+    #dt: not used noww
+    #block: if block is not zero, only missing value within a continuous block will be regarded as missing time; 
+    #       
+    missing_time=[]
+    for itime in time2:
+        #if sum(abs(itime-time1)<dt)==0:
+        if not itime in time1:
+            missing_time.append(itime)
+    #only return those missing one for a continuous block; remove thos scatter ones
+    
+    if block>0:
+        difft=time2[1]-time2[0]
+        if difft<0: ppppp
+        ntime=missing_time.copy()
+        for m,itime in enumerate(missing_time):
+            if m==0: ibegin=0; iend=0; continue
+            if abs(itime-missing_time[m-1]-difft)<0.1*difft:
+                iend=m
+            else:
+                if iend-ibegin<block:
+                    del ntime[ibegin:iend+1]
+                ibegin=m
+        print('before and after removing scattered one: {} {}'.format(len(missing_time),len(ntime)))
+        missing_time=ntime
+    
+    return missing_time
+
+#%% plotting related
 def set_xtick():
     xlims=gca().get_xlim()
     begin_year=num2date(xlims[0]).year
@@ -668,4 +677,3 @@ def plot_vgrid(vgrid='vgrid.in',bname='transect.bp',hgrid='hgrid.gr3'):
     gcf().tight_layout()
     # move_figure(gcf(),0,0)
     savefig('{}_vgrid'.format(bname.replace('.bp','')))
-
