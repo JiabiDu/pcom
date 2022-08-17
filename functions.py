@@ -5,6 +5,7 @@ import json
 from scipy.stats import gaussian_kde
 
 def gen_bpfile(lons,lats,stations,fname='station.bp',cmt='station.bp'):
+    print('=== gen_bpfile === ')
     f=open(fname,'w')
     f.write(cmt+'\n')
     f.write('{}\n'.format(len(lons)))
