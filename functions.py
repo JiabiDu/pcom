@@ -5,12 +5,12 @@ import json
 from scipy.stats import gaussian_kde
 
 def gen_bpfile2(lons,lats,stations,fname='station.bp',cmt='station.bp',hgrid='hgrid.gr3',vgrid='vgrid.in'):
-'''
+    '''
     gen bpfiles for extracting the vertical profiles at certain stations
     the script will find those stations within the model domain, and get the 
     vertical layer information at nearest grid. 
     ToDO: enable hgrid and vgrid loaded from npz
-'''
+    '''
     if not os.path.exists(hgrid): sys.exit('hgrid not found')
     if not os.path.exists(vgrid): sys.exit('vgrid not found')
     gd=read_schism_hgrid(hgrid)
@@ -36,7 +36,7 @@ def gen_bpfile2(lons,lats,stations,fname='station.bp',cmt='station.bp',hgrid='hg
     gen_bpfile(newlons,newlats,newstations,newdeps,fname=fname,cmt=cmt)
 
 def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
-'''
+    '''
     To generate bpfile based on given lon,lat information
     ----------
     lons,lats,stations: location and names of stations
@@ -54,11 +54,11 @@ def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
     f.close()
     
 def pair_data(x1,y1,x2,y2,hw=0.2/24):
-''' 
+    ''' 
     pair data within a certain of time window
     used to compare model and observation data
     put sparse data first (i.e., x1 and y1)
-'''
+    '''
     py1,py2=[],[]
     for ix,iy in zip(x1,y1): 
         fp=abs(ix-x2)<hw
