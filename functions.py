@@ -54,6 +54,11 @@ def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
     f.close()
     
 def pair_data(x1,y1,x2,y2,hw=0.2/24):
+''' 
+    pair data within a certain of time window
+    used to compare model and observation data
+    put sparse data first (i.e., x1 and y1)
+'''
     py1,py2=[],[]
     for ix,iy in zip(x1,y1): 
         fp=abs(ix-x2)<hw
