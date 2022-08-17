@@ -7,7 +7,7 @@ from scipy.stats import gaussian_kde
 #================================================================
 # AUTHOR NOTES
 # This package is used for Coastal Ocean Modelling
-# 
+# xx
 #===============================================================
 
 #%% schism related
