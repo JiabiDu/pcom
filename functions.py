@@ -4,15 +4,53 @@ from pylib import *
 import json
 from scipy.stats import gaussian_kde
 
-def gen_bpfile(lons,lats,stations,fname='station.bp',cmt='station.bp'):
-    print('=== gen_bpfile === ')
+def gen_bpfile2(lons,lats,stations,fname='station.bp',cmt='station.bp',hgrid='hgrid.gr3',vgrid='vgrid.in'):
+'''
+    gen bpfiles for extracting the vertical profiles at certain stations
+    the script will find those stations within the model domain, and get the 
+    vertical layer information at nearest grid. 
+    ToDO: enable hgrid and vgrid loaded from npz
+'''
+    if not os.path.exists(hgrid): sys.exit('hgrid not found')
+    if not os.path.exists(vgrid): sys.exit('vgrid not found')
+    gd=read_schism_hgrid(hgrid)
+    vg=read_schism_vgrid(vgrid)
+    # find nearest pts, ensure the distance is within some range
+    stations,lons,lats=array(stations),array(lons),array(lats)
+    
+    #-- select only station within model domain
+    ie,ip,acor=gd.compute_acor(c_[lons,lats])
+    fp=ie!=-1 #points inside model modmain
+    stations,lons,lats=stations[fp],lons[fp],lats[fp]
+    z=vg.compute_zcor(gd.dp)
+    sind=near_pts(c_[lons,lats],c_[gd.x,gd.y])
+    zi2=z[sind]
+    
+    newstations,newlons,newlats,newdeps=[],[],[],[]
+    for station,lon,lat,zi in zip(stations,lons,lats,zi2):
+        for iz in unique(zi):
+            newstations.append(station)
+            newlons.append(lon)
+            newlats.append(lat)
+            newdeps.append(iz*-1)
+    gen_bpfile(newlons,newlats,newstations,newdeps,fname=fname,cmt=cmt)
+
+def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
+'''
+    To generate bpfile based on given lon,lat information
+    ----------
+    lons,lats,stations: location and names of stations
+    deps : can be list or one scalar value
+
+    '''
     f=open(fname,'w')
     f.write(cmt+'\n')
     f.write('{}\n'.format(len(lons)))
     ist=0
-    for station,lon,lat in zip(stations,lons,lats):
+    if type(deps) in [int,float]: deps=ones(len(lons))*deps
+    for station,lon,lat,dep in zip(stations,lons,lats,deps):
         ist+=1
-        f.write('{} {:.10f} {:.10f} {:.4f} !{}\n'.format(ist,lon,lat,0.0,station))
+        f.write('{} {:.10f} {:.10f} {:.4f} !{}\n'.format(ist,lon,lat,dep,station))
     f.close()
     
 def pair_data(x1,y1,x2,y2,hw=0.2/24):
