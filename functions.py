@@ -647,12 +647,31 @@ def find_missing_time(time1,time2,dt=0.1,block=0):
     
     return missing_time
 
+def mean_profile(ttime,tdep,tdata):
+    '''
+    Find the mean profile given all availabe records 
+    '''
+    utime=unique(ttime)
+    ttime,tdep,tdata=array(ttime),array(tdep),array(tdata)
+    pdep=linspace(tdep.min(),tdep.max(),20)
+    z=[]
+    for timei in utime:
+        fp=ttime==timei
+        tmpdep=tdep[fp]
+        tmpdata=tdata[fp]
+        # avearge those at same depth
+        udep=unique(tmpdep)
+        udata=[nanmean(tmpdata[tmpdep==depi]) for depi in udep]
+        z.append(interp(pdep,udep,udata))
+    z=array(z)
+    pdata=z.mean(axis=0)
+    return pdep,pdata
 #%% plotting related
-def set_xtick():
+def set_xtick(fmt=0):
     xlims=gca().get_xlim()
     begin_year=num2date(xlims[0]).year
     end_year=num2date(xlims[1]).year
-    if begin_year==end_year:
+    if begin_year==end_year or fmt==1:
         xts,xls=get_xtick(fmt=1) #get monthly ticks
     else:
         xts,xls=get_xtick() #get yearly tickes  
