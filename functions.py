@@ -8,6 +8,7 @@ from scipy.stats import gaussian_kde
 # AUTHOR NOTES
 # This package is used for Coastal Ocean Modelling
 # It has several components: data doaloading, data processing, plotting 
+# contact jiabi.du@gmail.com
 #===============================================================
 
 #%% schism related
