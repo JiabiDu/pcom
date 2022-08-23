@@ -3,7 +3,7 @@
 from pylib import *
 import json
 from scipy.stats import gaussian_kde
-
+from scipy.interpolate import griddata
 #================================================================
 # AUTHOR NOTES
 # This package is used for Coastal Ocean Modelling
@@ -703,3 +703,24 @@ def plot_vgrid(vgrid='vgrid.in',bname='transect.bp',hgrid='hgrid.gr3'):
     gcf().tight_layout()
     # move_figure(gcf(),0,0)
     savefig('{}_vgrid'.format(bname.replace('.bp','')))
+
+def plot_section(x,y,z,xn=40,yn=20,vmax=30,vmin=0,levels=None,cmap='jet',show_datapoint=False):
+    if levels is None: levels=arange(vmin,vmax+1,1)
+    x,y,z=array(x),array(y),array(z)
+    xi = linspace(min(x), max(x), xn)
+    yi = linspace(min(y), max(y), yn)
+    Z = griddata((x, y), z, (xi[None,:], yi[:,None]), method='linear')
+    X, Y = meshgrid(xi, yi)
+    Z[Z>vmax]=vmax
+    contourf(xi,yi,Z,levels=levels,vmin=vmin,vmax=vmax,cmap=cmap,linestyles='solid')
+    if show_datapoint: plot(x,y,'x',ms=1)
+    
+    #fill the land at the bottom
+    ux=unique(x)
+    uy=[]
+    for xi in ux:
+        uy.append(y[x==xi].min())
+    uy=array(uy)
+    ux=[ux.max(),ux.min(),*ux]
+    uy=[uy.min(),uy.min(),*uy]
+    fill(ux,uy,color='w')
