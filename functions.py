@@ -88,7 +88,7 @@ def kde_plot(x,y,ms=1):
 
     scatter(x, y, c=z, s=ms)
 
-#%% download data
+#%% Data downloading
 def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reRead=False,sdir=None, reDownload=False):
     y1=num2date(datenum(StartT)).year; y2=num2date(datenum(EndT)-1/24).year
     if sdir is None: sdir=f'usgs_{y1}_{y2}'
@@ -493,7 +493,8 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
 
 
 
-#%% data processing
+#%% Data processing
+
 def get_daily_mean(times,flow,lpf=False):
     #get daily mean
     if lpf:
