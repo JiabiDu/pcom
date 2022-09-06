@@ -705,12 +705,25 @@ def plot_vgrid(vgrid='vgrid.in',bname='transect.bp',hgrid='hgrid.gr3'):
     # move_figure(gcf(),0,0)
     savefig('{}_vgrid'.format(bname.replace('.bp','')))
 
-def plot_section(x,y,z,xn=40,yn=20,vmax=30,vmin=0,levels=None,cmap='jet',show_datapoint=False):
+def plot_section(x,y,z,xn=40,yn=20,vmin=0,vmax=30,levels=None,cmap='jet',show_datapoint=False):
     if levels is None: levels=arange(vmin,vmax+1,1)
-    x,y,z=array(x),array(y),array(z)
     xi = linspace(min(x), max(x), xn)
     yi = linspace(min(y), max(y), yn)
-    Z = griddata((x, y), z, (xi[None,:], yi[:,None]), method='linear')
+    
+    #-- add more data points toward the bottom
+    x,y,z=array(x),array(y),array(z)
+    ux=unique(x)
+    x2,y2,z2=[],[],[]
+    for tx in ux:
+        fp=x==tx
+        x2.extend(tile(tx,len(yi)))
+        y2.extend(yi)
+        z2.extend(interp(yi,y[fp],z[fp]))
+    x2,y2,z2=array(x2),array(y2),array(z2)
+    #x,y,z=array(x),array(y),array(z)
+    xi = linspace(min(x), max(x), xn)
+    yi = linspace(min(y), max(y), yn)
+    Z = griddata((x2, y2), z2, (xi[None,:], yi[:,None]), method='linear')
     X, Y = meshgrid(xi, yi)
     Z[Z>vmax]=vmax
     contourf(xi,yi,Z,levels=levels,vmin=vmin,vmax=vmax,cmap=cmap,linestyles='solid')
