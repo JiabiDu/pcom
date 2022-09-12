@@ -785,3 +785,21 @@ def plot_2d(run='run02j',stack=1,itime=0,ilay=51,grid='../run02j/hgrid.gr3',var=
     show()
     if saveplot: savefig(f'{run}/figs/{var}_{stack}_{itime}_{ilay}.png')
 
+def gplot(x,y,gfactor=10,**kwargs): 
+    ''' 
+    plot gappy data, process the data first, and then call plot
+    '''
+    ind=argsort(x)
+    x,y=x[ind],y[ind]
+    mdt=median(diff(x))
+    tmpx=[]
+    for m,xi in enumerate(x):
+        if m==0: continue
+        dt=xi-x[m-1]
+        if dt>mdt*gfactor: #gap larger than multiple times of the median dt
+           tmpx.append(x[m-1]+mdt)
+    x=concatenate([x,array(tmpx)])
+    y=concatenate([y,ones(len(tmpx))*nan])
+    ind=argsort(x)
+    x,y=x[ind],y[ind]
+    plot(x,y,**kwargs)
