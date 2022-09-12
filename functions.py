@@ -784,6 +784,4 @@ def plot_2d(run='run02j',stack=1,itime=0,ilay=51,grid='../run02j/hgrid.gr3',var=
     gd.plot_bnd()
     show()
     if saveplot: savefig(f'{run}/figs/{var}_{stack}_{itime}_{ilay}.png')
-                                                                                                                                                                                           772,5         Bot
-
 
