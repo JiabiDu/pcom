@@ -738,3 +738,52 @@ def plot_section(x,y,z,xn=40,yn=20,vmin=0,vmax=30,levels=None,cmap='jet',show_da
     ux=[ux.max(),ux.min(),*ux]
     uy=[uy.min(),uy.min(),*uy]
     fill(ux,uy,color='w')
+
+def plot_2d(run='run02j',stack=1,itime=0,ilay=51,grid='../run02j/hgrid.gr3',var='totalSuspendedLoad',cmap='jet',
+            saveplot=False,showplot=True,odir='../run02j/outupts',clim=[0,30],use_bottom=True):
+    if not os.path.exists(f'{run}/figs'): os.mkdir(f'{run}/figs')
+    if grid.endswith('.npz'):
+        gd=loadz(grid).hgrid
+    else:
+        gd=read_schism_hgrid(grid)
+
+    # get the data first
+    C=ReadNC(f'{odir}/out2d_{stack}.nc',1); vars_2d=[*C.variables]; C.close() #get 2d output variables
+    if var in vars_2d:
+        value= C[var][itime].ravel()
+    else:
+        if not os.path.exists(f'{odir}/{var}_{stack}.nc'): print(f'no output for {var}');
+        try:
+            C=ReadNC(f'{odir}/{var}_{stack}.nc',1);
+            value= C[var][itime,:,ilay].ravel()
+            if use_bottom and sum(value>1e5)>0: value0=C[var][itime,:,:] #entire column
+            if var.find('sedConc')!=-1 or var=='totalSuspendedLoad': value=value*1000
+        except:
+            pass
+    if var=='totalSuspendedLoad' and not os.path.exists(f'{odir}/{var}_{stack}.nc'):
+        value=zeros(len(gd.x))
+        if use_bottom: value0=zeros([len(gd.x),52])
+        for var in ['sedConcentration_1','sedConcentration_2','sedConcentration_3','sedConcentration_4']:
+            C=ReadNC(f'{odir}/{var}_{stack}.nc',1);
+            value += C[var][itime,:,ilay].ravel()*1000
+            if sum(value>1e5)>0 and use_bottom: value0 += C[var][itime,:,:]*1000
+
+    value[value>1e5]=nan
+    if use_bottom and sum(isnan(value))>0:
+        print('use the bottom value')
+        #for nan values, use the bottom one
+        value0[value0>1e5]=nan
+        fp=nonzero(isnan(value))[0]
+        for ig in fp:
+            tmp=value0[ig,:]
+            ind=nonzero(~isnan(tmp))[0]
+            value[ig]=tmp[ind[0]]
+
+    if len(clim)==0: clim=[percentile(value[~isnan(value)],5),percentile(value[~isnan(value)],95)]
+    gd.plot(fmt=1,value=value,clim=clim,cmap=cmap)
+    gd.plot_bnd()
+    show()
+    if saveplot: savefig(f'{run}/figs/{var}_{stack}_{itime}_{ilay}.png')
+                                                                                                                                                                                           772,5         Bot
+
+
