@@ -803,3 +803,19 @@ def gplot(x,y,gfactor=10,**kwargs):
     ind=argsort(x)
     x,y=x[ind],y[ind]
     plot(x,y,**kwargs)
+
+def gappy_data(x,y,gfactor=10):
+    ind=argsort(x)
+    x,y=x[ind],y[ind]
+    mdt=median(diff(x))
+    tmpx=[]
+    for m,xi in enumerate(x):
+        if m==0: continue
+        dt=xi-x[m-1]
+        if dt>mdt*gfactor: #gap larger than multiple times of the median dt
+           tmpx.append(x[m-1]+mdt)
+    x=concatenate([x,array(tmpx)])
+    y=concatenate([y,ones(len(tmpx))*nan])
+    ind=argsort(x)
+    x,y=x[ind],y[ind]
+    return x,y
