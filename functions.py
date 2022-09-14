@@ -789,19 +789,7 @@ def gplot(x,y,gfactor=10,**kwargs):
     ''' 
     plot gappy data, process the data first, and then call plot
     '''
-    ind=argsort(x)
-    x,y=x[ind],y[ind]
-    mdt=median(diff(x))
-    tmpx=[]
-    for m,xi in enumerate(x):
-        if m==0: continue
-        dt=xi-x[m-1]
-        if dt>mdt*gfactor: #gap larger than multiple times of the median dt
-           tmpx.append(x[m-1]+mdt)
-    x=concatenate([x,array(tmpx)])
-    y=concatenate([y,ones(len(tmpx))*nan])
-    ind=argsort(x)
-    x,y=x[ind],y[ind]
+    x,y=gappy_data(x,y,gfactor=gfactor)
     plot(x,y,**kwargs)
 
 def gappy_data(x,y,gfactor=10):
@@ -819,3 +807,13 @@ def gappy_data(x,y,gfactor=10):
     ind=argsort(x)
     x,y=x[ind],y[ind]
     return x,y
+
+def download_ndbc(year=2012):
+    url='https://www.ndbc.noaa.gov/data/historical/stdmet/'
+    cmd=f'wget -r -nc -np -nH -nd -A *{year}.txt.gz {url}; mkdir gz; mv *.txt.gz gz; rm robots.txt.tmp'
+    print(cmd); os.system(cmd)
+    
+    fnames=[i for i in os.listdir('gz') if i.endswith('.txt.gz')]
+    for fname in fnames:
+        cmd=f'gzip -d gz/{fname}'
+        print(cmd); os.system(cmd)
