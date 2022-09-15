@@ -817,3 +817,28 @@ def download_ndbc(year=2012):
     for fname in fnames:
         cmd=f'gzip -d gz/{fname}'
         print(cmd); os.system(cmd)
+
+def get_noaa_current(staitons=[],years=[2018],sdir='data'):
+    '''
+    Get noaa current data multiple bins at given stations 
+    '''
+    for m,station in enumerate(stations):
+        for year in years:
+            mday=[31,28,31,30,31,30,31,31,30,31,30,31]
+            if year%4==0: mday[1]=29
+            for mon in arange(1,13):
+                begin_date='{:4d}{:02d}{:02d}'.format(year,mon,1)
+                end_date='{:4d}{:02d}{:02d}'.format(year,mon,mday[mon-1])
+                for bin in arange(1,101):
+                    url='https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date={}&end_date={}&station={}&product=currents&time_zone=gmt&units=metric&format=csv&bin={}'.format(begin_date,end_date,station,bin)
+                    fname='{}/{}_{}_{}_bin{:02d}.csv'.format(sdir,station,begin_date,end_date,bin)
+                    if os.path.isfile(fname) and os.path.getsize(fname)<10e3: break
+                    if os.path.isfile(fname) and os.path.getsize(fname)>10e3: continue
+                    try: #when there is no data at the given station, error may occurs. So use "try"
+                        urlsave(url,fname)
+                        print('{}/{} save into {}'.format(m+1,len(stations),fname))
+                        if os.path.getsize(fname)<10e3: print('no data'); break
+                    except:
+                        print('... bad request for current at {} bin {} in {}-{}'.format(station,bin,year,mon))
+                        break
+
