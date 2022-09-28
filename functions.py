@@ -43,7 +43,7 @@ def gen_bpfile2(lons,lats,stations,fname='station.bp',cmt='station.bp',hgrid='hg
             newdeps.append(iz*-1)
     gen_bpfile(newlons,newlats,newstations,newdeps,fname=fname,cmt=cmt)
 
-def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
+def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp',hgrid=None):
     '''
     To generate bpfile based on given lon,lat information
     ----------
@@ -51,6 +51,13 @@ def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
     deps : can be list or one scalar value
 
     '''
+    lons,lats,stations=array(lons),array(lats),array(stations)
+    if hgrid!=None and os.path.exists(hgrid):  #to include only stations inside the model domain
+        gd=read_schism_hgrid(hgrid)
+        ie,ip,acor=gd.compute_acor(c_[plon,plat])
+        fp=ie!=-1
+        lons,lats,stations=lons[fp],lats[fp],stations[fp]
+        
     f=open(fname,'w')
     f.write(cmt+'\n')
     f.write('{}\n'.format(len(lons)))
@@ -484,9 +491,10 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
     print('== read noaa tide and current data ==')
     if not sdir.endswith('/'): sdir=sdir+'/'
     for varname in varnames: #['wind','hourly_height','water_temp','air_temp','conductivity']:
+        fnames=['{}{}_{}_{}.csv'.format(sdir,varname,stid,year) for stid in stations for year in years]
         if len(stations)==1: sname='{}{}_{}_{}_{}'.format(sname_pre,station,varname,years[0],years[-1])
         if len(stations)>1: sname='{}{}_{}_{}'.format(sname_pre,varname,years[0],years[-1])
-        if os.path.isfile(sname+'.npz') and not read_again: print('file exist '+sname+'.npz'); continue
+        if os.path.isfile(sname+'.npz') and not read_again and updated(sname+'.npz',fnames): print('file exist and updated '+sname+'.npz'); continue
         time=[] #initialize the list, list is extentable
         data=[]
         station=[]
