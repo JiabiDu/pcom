@@ -43,7 +43,7 @@ def gen_bpfile2(lons,lats,stations,fname='station.bp',cmt='station.bp',hgrid='hg
             newdeps.append(iz*-1)
     gen_bpfile(newlons,newlats,newstations,newdeps,fname=fname,cmt=cmt)
 
-def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp',hgrid=None):
+def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
     '''
     To generate bpfile based on given lon,lat information
     ----------
@@ -51,13 +51,6 @@ def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp',h
     deps : can be list or one scalar value
 
     '''
-    lons,lats,stations=array(lons),array(lats),array(stations)
-    if hgrid!=None and os.path.exists(hgrid):  #to include only stations inside the model domain
-        gd=read_schism_hgrid(hgrid)
-        ie,ip,acor=gd.compute_acor(c_[plon,plat])
-        fp=ie!=-1
-        lons,lats,stations=lons[fp],lats[fp],stations[fp]
-        
     f=open(fname,'w')
     f.write(cmt+'\n')
     f.write('{}\n'.format(len(lons)))
@@ -239,51 +232,7 @@ def get_usgs_temp(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
         # save the data into npz format
         print('save data into '+sname+'.npz')
         savez(sname,S)
-
-def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='2022-01-01T00:00:00',end_time='2032-01-01T00:00:00',
-                   just_update=True,isplot=False,var='sea_water_salinity'):
-    '''
-    For API details, see https://buoybay.noaa.gov/data/api
-    '''
-    print('--- get_cbibs_data')
-    if os.path.exists(sname) and just_update:
-        #change the start_time
-        S=loadz(sname)
-        start_time=num2date(S.time[-1]).strftime("%Y-%m-%dT%H:%M:%S")
-        print('change start_time to ',start_time)
         
-    apikey='f159959c117f473477edbdf3245cc2a4831ac61f'
-    url=f'https://mw.buoybay.noaa.gov/api/v1/json/query/{station}?key={apikey}&sd={start_time}z&ed={end_time}z&var={var}'
-    urlsave(url,'tmp.json') #reading data
-    print('finish reading buoy data')
-    #process the json data
-    print('reading json')
-    with open('tmp.json') as f: jdata = json.load(f)
-    if len(jdata['stations'][0]['variable'])==0: print('no data'); return
-    time,data=[],[]
-    for i in jdata['stations'][0]['variable'][0]['measurements']:
-        time.append(i['time'])
-        data.append(i['value'])
-    print('finish reading json')
-    if len(time)==0: print('no data'); return
-    time=datenum(time)
-    print('finish datenum')
-    time,data=array(time),array(data)
-    ind=argsort(time)
-    time,data=time[ind],data[ind]
-    data=data.astype('float')
-    if os.path.exists(sname) and just_update:
-        fp=time>S.time.max()
-        S.time=concatenate([S.time,time[fp]]) #append the latest records
-        S.data=concatenate([S.data,data[fp]])
-        print('append records: ',sum(fp))
-    else:
-        S=zdata()
-        S.time,S.data=time,data.astype('float')
-    #S.data[S.data>35]=nan
-    #S.data[S.data<=1]=nan
-    savez(sname,S)
-    if isplot: figure(figsize=[10,3]);  plot(S.time,S.data); set_xtick(fmt=1)        
 
 def fill_usgs_flow_v2(S=None,begin_time=datenum(2007,1,1),end_time=datenum(2009,1,1),sname=None,recal=False):
     '''
@@ -491,10 +440,9 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
     print('== read noaa tide and current data ==')
     if not sdir.endswith('/'): sdir=sdir+'/'
     for varname in varnames: #['wind','hourly_height','water_temp','air_temp','conductivity']:
-        fnames=['{}{}_{}_{}.csv'.format(sdir,varname,stid,year) for stid in stations for year in years]
         if len(stations)==1: sname='{}{}_{}_{}_{}'.format(sname_pre,station,varname,years[0],years[-1])
         if len(stations)>1: sname='{}{}_{}_{}'.format(sname_pre,varname,years[0],years[-1])
-        if os.path.isfile(sname+'.npz') and not read_again and updated(sname+'.npz',fnames): print('file exist and updated '+sname+'.npz'); continue
+        if os.path.isfile(sname+'.npz') and not read_again: print('file exist '+sname+'.npz'); continue
         time=[] #initialize the list, list is extentable
         data=[]
         station=[]
@@ -543,17 +491,7 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
         savez(sname,S)
         print(f'data saved into {sname}.npz')
 
-# get noaa predicting water level
-def get_noaa_predict_tide(sname='data/noaa_ptide.npz',year=2022,station='8637689'):
-    if os.path.exists(sname): print(sname,'exists'); return
-    url=f'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=NOS.COOPS.TAC.WL&begin_date={year}0101&end_date={year}1231&datum=MSL&station={station}&time_zone=GMT&units=metric&interval=h&format=csv'
-    urlsave(url,'data/noaa_tide/tide_prediction_8637689.csv')
-    data=[i.strip().split(',') for i in open('data/noaa_tide/tide_prediction_8637689.csv','r').readlines()[1:]]; data=array(data)
-    time=datenum(data[:,0])
-    ptide=data[:,1].astype('float')
-    S=zdata()   
-    S.time,S.ptide=time,ptide
-    savez('data/noaa_ptide.npz',S)
+
 
 #%% Data processing
 
@@ -602,37 +540,6 @@ def remove_spike(times,data,ds=2,hw=5,rmnan=True,inter_spike=False):
         newdata=newdata[~fp]
         newtime=newtime[~fp]
     return newtime,newdata
-def combine_data(dataA='data/noaa_tide.npz',dataB='data/noaa_ptide.npz',sname='data/tide.npz',varA=None,varB=None,add_diff=False,redo=False):
-    if updated(sname,[dataA,dataB]) and not redo: print(sname+' exists and updated');return
-    A=loadz(dataA); B=loadz(dataB)
-    if not (hasattr(A,'time') and hasattr(A,'time')): sys.exit('time not exist in the input file')
-    fp=B.time>A.time.max() #must have time
-    if varA==None: #find the data data name automatically, suitable when there is just one variable
-        atts=[var for var in vars(A)]
-        varA=[i for i in atts if not i in ['station','time','VINFO']][0]
-        print(f'{varA} in {dataA} to be combiend')
-        #remove nan values
-    #exec(f'tfp=~isnan(A.{varA}); A.{varA}=A.{varA}[tfp]; A.time=A.time[tfp]')
-    if varB==None:
-        atts=[var for var in vars(B)]
-        varB=[i for i in atts if not i in ['station','time','VINFO']][0]
-        print(f'{varB} in {dataB} to be combiend')
-    #exec(f'tfp=~isnan(B.{varB}); B.{varB}=B.{varB}[tfp]; B.time=B.time[tfp]')
-    if add_diff: #add a systematic difference in historical data
-        T=zdata()
-        x1=A.time; exec(f'T.y1=A.{varA}')
-        x2=B.time; exec(f'T.y2=B.{varB}')
-        y1,y2=pair_data(x1,T.y1,x2,T.y2,hw=0.2/24)
-        mdiff=nanmean(y1)-nanmean(y2) #y1 is the usually the true value (eg. observation)
-        exec(f'B.{varB}=B.{varB}+mdiff')
-        print(f'!! add {mdiff} to {varB} in {dataB}; len y1 and y2=',len(y1),len(y2))
-    S=zdata()
-    exec('S.data=concatenate([A.{},B.{}[fp]])'.format(varA,varB))
-    S.time=concatenate([A.time,B.time[fp]])
-    fp=~isnan(S.data)
-    S.time,S.data=S.time[fp],S.data[fp]
-    savez(sname,S)
-    
 def linear_lag_analysis(time1,flow1,time2,flow2,daily=True,shiftings=arange(-5,6),degree=4):
     from sklearn.linear_model import LinearRegression
     from sklearn.preprocessing import PolynomialFeatures
@@ -886,6 +793,8 @@ def gplot(x,y,gfactor=10,**kwargs):
     plot(x,y,**kwargs)
 
 def gappy_data(x,y,gfactor=10):
+    x,y=array(x),array(y)
+    if len(x)==0: return array([])
     ind=argsort(x)
     x,y=x[ind],y[ind]
     mdt=median(diff(x))
@@ -910,175 +819,3 @@ def download_ndbc(year=2012):
     for fname in fnames:
         cmd=f'gzip -d gz/{fname}'
         print(cmd); os.system(cmd)
-
-def get_noaa_current(staitons=[],years=[2018],sdir='data'):
-    '''
-    Get noaa current data multiple bins at given stations 
-    '''
-    for m,station in enumerate(stations):
-        for year in years:
-            mday=[31,28,31,30,31,30,31,31,30,31,30,31]
-            if year%4==0: mday[1]=29
-            for mon in arange(1,13):
-                begin_date='{:4d}{:02d}{:02d}'.format(year,mon,1)
-                end_date='{:4d}{:02d}{:02d}'.format(year,mon,mday[mon-1])
-                for bin in arange(1,101):
-                    url='https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date={}&end_date={}&station={}&product=currents&time_zone=gmt&units=metric&format=csv&bin={}'.format(begin_date,end_date,station,bin)
-                    fname='{}/{}_{}_{}_bin{:02d}.csv'.format(sdir,station,begin_date,end_date,bin)
-                    if os.path.isfile(fname) and os.path.getsize(fname)<10e3: break
-                    if os.path.isfile(fname) and os.path.getsize(fname)>10e3: continue
-                    try: #when there is no data at the given station, error may occurs. So use "try"
-                        urlsave(url,fname)
-                        print('{}/{} save into {}'.format(m+1,len(stations),fname))
-                        if os.path.getsize(fname)<10e3: print('no data'); break
-                    except:
-                        print('... bad request for current at {} bin {} in {}-{}'.format(station,bin,year,mon))
-                        break
-
-def updated(sname,fnames):
-    return os.path.exists(sname) and all([os.path.getmtime(sname)>os.path.getmtime(fname) for fname in fnames])
-
-def get_cbp_data(years=[1984,2022],stations=[1325,1328],pstr='63,78',sdir='data/cbp_nutrient/',sname='data/cbp_nutrient.npz',download_again=False):
-    #------------------------------------------------------------------------------
-    #download data
-    #------------------------------------------------------------------------------
-    nowtime=datetime.datetime.now().strftime("%Y-%m-%d")
-    url0='http://data.chesapeakebay.net/api.CSV/WaterQuality/WaterQuality/1-1-{}/12-31-{}/0,1/2,4,6/12,13,15,35,36,2,3,7,33,34,23,24/Station'.format(*years)
-    if not os.path.exists(sdir): os.mkdir(sdir)
-    #download data for each station
-    for m,station in enumerate(stations):
-        url='{}/{}/{}'.format(url0,station,pstr)
-        fname='{}/{}_{}_{}.csv'.format(sdir,station,years[0],years[-1])
-        if os.path.exists(fname) and os.path.getmtime(fname)>=time.time()-3600*6 and not download_again: print(fname,'exists and updated'); continue
-        print('download: {}, {}/{}'.format(station,m,len(stations)))
-        try:
-            urlsave(url,fname)
-        except:
-            pass
-        if os.path.getsize(fname)<500: os.remove(fname)
-    
-    #------------------------------------------------------------------------------
-    #read data
-    #------------------------------------------------------------------------------
-    fnames=array([sdir+i for i in os.listdir(sdir) if i.endswith('.csv')]) #get all data files
-    if updated(sname,fnames): print(sname,'exists and updated'); return
-    svars=array(['Station','SampleDate','SampleTime','TotalDepth','Depth','Layer','Parameter','MeasureValue','Unit','Latitude','Longitude'])
-    mvars=array(['station','date','time','tdepth','depth','layer','var','data','unit','lat','lon'])
-    S=zdata(); 
-    for i in mvars: exec('S.{}=[]'.format(i))
-    for m,fname in enumerate(fnames):
-        print('reading: {}, {}/{}'.format(fname,m,len(fnames)))
-        #read all fields
-        try:
-            lines=array([i.strip().replace('"','').split(',') for i in open(fname,'r').readlines() if len(i)>50])
-        except:
-            lines=array([i.strip().replace('"','').split(',') for i in open(fname,'r',encoding='cp850').readlines() if len(i)>50])
-            
-        #remove invalid line
-        tl=lines[0]; fp=array([nonzero(tl==i)[0][0] for i in svars]); lines=lines[1:,fp]
-        fpn=lines[:,7]!=''; lines=lines[fpn]
-    
-        #assign -999 to empty field
-        fpn=lines[:,3]==''; lines[fpn,3]='-999'
-        fpn=lines[:,4]==''; lines[fpn,4]='-999'
-    
-        #save each variables
-        for n,mvar in enumerate(mvars): exec('S.{}.extend(lines[:,{}])'.format(mvar,n))
-    
-    #orgnaize data, change format
-    for i in mvars: exec('S.{}=array(S.{})'.format(i,i))
-    S.tdepth=S.tdepth.astype('float32'); S.depth=S.depth.astype('float32'); S.data=S.data.astype('float')
-    S.lat=S.lat.astype('float'); S.lon=S.lon.astype('float')
-    
-    #get time
-    S.time=datestr2num(array(['{} {}'.format(i,j) for i,j in zip(S.date,S.time)])); del S.date
-    
-    #try to shrink data
-    uvars=unique(S.var); S.unit=dict(zip(uvars, array([unique(S.unit[S.var==i])[0] for i in uvars])))
-    stations=unique(S.station); S.lon=dict(zip(stations, squeeze(array([unique(S.lon[S.station==i]) for i in stations]))))
-    stations=unique(S.station); S.lat=dict(zip(stations, squeeze(array([unique(S.lat[S.station==i]) for i in stations]))))
-    
-    #save data
-    savez(sname,S)
-    
-def get_climat(ttimes,data,hourly=False,sname='climat',monthly=False):
-    if not sname==None and os.path.exists(sname):
-        C=loadz(sname)
-        udays,uvalue=C.udays,C.uvalue
-        return udays,uvalue
-    
-    if hourly: #round the time into hourly first
-        print('get hourly climat')
-        ttimes=around(ttimes*24)/24
-        days=[]
-        for iyear in arange(1900,2100): #get days since the given year
-            fp=(ttimes>=datenum(iyear,1,1))*(ttimes<datenum(iyear+1,1,1))
-            if sum(fp)!=0:
-                days.extend(ttimes[fp]-datenum(iyear,1,1))
-        udays=unique(days)
-        uvalue=[]
-        for m,iday in enumerate(udays):
-            print('{}/{}'.format(m+1,len(udays)))
-            fp=days==iday
-            uvalue.append(data[fp].mean())
-        uvalue=array(uvalue)
-        
-    if monthly: 
-        print('get monthly climat')
-        mon=array([num2date(i).month for i in ttimes])
-        udays,uvalue=[],[]
-        for imon in arange(1,13):
-            fp=mon==imon
-            udays.append(datenum(2000,imon,15)-datenum(2000,1,1))
-            uvalue.append(data[fp].mean())
-    if sname!=None: 
-        S=zdata()
-        S.udays=array(udays)
-        S.uvalue=array(uvalue)
-        savez(sname,S)
-        print('save into',sname)
-    uvalue=array(uvalue)
-    return udays,uvalue
-
-def find_peak_trough(x,y):
-    '''
-    The function is used to find the peak and trough of hourly data (e.g., such as water level).
-    Peak and trough are paird; trough is found in the following 10 hours after a peak. 
-    Right not only work for hourly data; can be revised to deal any frequency. 
-    
-    Parameters
-    ----------
-    x : time
-    y : measured hourly value
-
-    Returns
-    -------
-    peaktime : time of each peak
-    peakvalue : value of each peak
-    troughtime : time of each trough
-    troughvalue : value of each trough
-
-    '''
-    ipeak=[]
-    peaktime=[]
-    peakvalue=[]
-    itrough=[]
-    troughtime=[]
-    troughvalue=[]
-    for itime,tmpy in enumerate(y):
-        if itime<3 or itime>len(y)-10: continue
-        if sum(y[itime-2:itime+3]>tmpy)==0:
-            ipeak.append(itime)
-            peaktime.append(x[itime])
-            peakvalue.append(tmpy)
-            # find the low tide in next [5,7]
-            tmp=y[itime:itime+10]
-            fp=tmp==tmp.min()
-            if sum(fp)>=1:
-                itrough.append(itime+nonzero(fp)[0][0])
-                troughtime.append(x[itrough[-1]])
-                troughvalue.append(y[itrough[-1]])
-            else:
-                print('trough not found')
-    return peaktime,peakvalue,troughtime,troughvalue
-    
