@@ -819,3 +819,7 @@ def download_ndbc(year=2012):
     for fname in fnames:
         cmd=f'gzip -d gz/{fname}'
         print(cmd); os.system(cmd)
+    
+def get_skill(x1,y1,x2,y2):
+    py1,py2=pair_data(x1,y1,x2,y2,hw=0.2/24)
+    return get_stat(py1,py2,fmt=0)
