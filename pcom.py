@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+/usr/bin/env python3
 
 from pylib import *
 import json
@@ -12,6 +12,16 @@ from scipy.interpolate import griddata
 #===============================================================
 
 #%% schism related
+def in_domain(lons,lats,hgrid):
+    lons,lats=array(lons),array(lats)
+    if hgrid.endswith('npz'):
+        gd=loadz(hgrid).hgrid
+        gd.x,gd.y=gd.lon,gd.lat
+    else:
+        gd=read_schism_hgrid(hgrid)
+    ie,ip,acor=gd.compute_acor(c_[lons,lats])
+    return ie!=-1 #points inside model modmain
+
 def gen_bpfile2(lons,lats,stations,fname='station.bp',cmt='station.bp',hgrid='hgrid.gr3',vgrid='vgrid.in'):
     '''
     gen bpfiles for extracting the vertical profiles at certain stations
