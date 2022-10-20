@@ -409,17 +409,17 @@ def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=
     if not os.path.exists(sdir): os.mkdir(sdir)
     #url0='https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?units=metric&time_zone=gmt&application=NCCOOS&format=csv&interval=h&datum=msl'
     for station in stations:
-        # get lon lat from json txt output; optional
-        url='https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{}.json?expand=details,products&units=metric'.format(station)
-        try: 
-            urlsave(url,'tmp.json')
-        except:
-            print('no data found for station ',station)
-            continue
-        with open('tmp.json') as f: jdata = json.load(f)
-        lat,lon,name=jdata['stations'][0]['lat'],jdata['stations'][0]['lng'],jdata['stations'][0]['name']
-        os.remove('tmp.json')
-        print('{}:{}, {}N, {}W'.format(station,name,lon,-lat))
+        ### get lon lat from json txt output; optional
+        # url='https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{}.json?expand=details,products&units=metric'.format(station)
+        # try: 
+        #     urlsave(url,'tmp.json')
+        # except:
+        #     print('no data found for station ',station)
+        #     continue
+        # with open('tmp.json') as f: jdata = json.load(f)
+        # lat,lon,name=jdata['stations'][0]['lat'],jdata['stations'][0]['lng'],jdata['stations'][0]['name']
+        # os.remove('tmp.json')
+        # print('{}:{}, {}N, {}W'.format(station,name,lon,-lat))
         
         # get data
         print('get noaa data')
@@ -432,7 +432,7 @@ def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=
                 url='{}&begin_date={}0101&end_date={}1231&station={}&product={}'.format(url0,year,year,station,product_name)
                 #print(url)
                 fname='{}/{}_{}_{}.csv'.format(sdir,product_name,station,year)
-                if os.path.isfile(fname) and not load_again: continue
+                if os.path.isfile(fname) and not load_again: print('exists',fname); continue
                 try: #when there is no data at the given station, error may occurs. So use "try"
                     urlsave(url,fname)
                     print('.. save into {}'.format(fname))
