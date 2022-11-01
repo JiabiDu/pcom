@@ -10,7 +10,7 @@ p.tide_dir       = r'/sciclone/data10/wangzg/FES2014'   #FES2014 database '
 p.hycom_dir  = '../../Observations/hycom/Data/'
 p.flow_dir   = '../../Observations/usgs_flow/npz/'
 p.temp_dir   = '../../Observations/usgs_temp/npz/'
-p.sflux_dir  = '../sflux'
+p.sflux_dir  = '../sflux'  #have to be relative path
 p.setup_dir  = '../setup_files'
 p.flag['*.gr3']          =       0    
 p.flag['tvd.prop']       =       0
@@ -19,15 +19,15 @@ p.flag['hotstart.nc']    =       0
 p.flag['elev2D.th.nc']   =       0
 p.flag['TEM_3D.th.nc']   =       0
 p.flag['SAL_3D.th.nc']   =       0
-p.flag['uv3D.th.nc']     =       1
-p.flag['TEM_nu.nc']      =       1
-p.flag['SAL_nu.nc']      =       1
-p.flag['source_sink.in'] =       1
-p.flag['vsource.th']     =       1
-p.flag['msource.th']     =       1
-p.flag['sflux']          =       1
-p.flag['check']          =       1
-p.flag['run']            =       1  #run the model on sciclone
+p.flag['uv3D.th.nc']     =       0
+p.flag['TEM_nu.nc']      =       0
+p.flag['SAL_nu.nc']      =       0
+p.flag['source_sink.in'] =       0
+p.flag['vsource.th']     =       0
+p.flag['msource.th']     =       0
+p.flag['sflux']          =       0
+p.flag['check']          =       0
+p.flag['run femto']      =       1  #run the model on sciclone; must run this script on femto node
 #%% ===========================================================================
 # copy grid files
 #==============================================================================
@@ -687,7 +687,7 @@ if 1 in [p.flag[fname] for fname in ['source_sink.in','vsource.th','msource.th']
     # gen source_sink.in, find source and sink element near the boundary, check the element depth
     #==================================================================
     if p.flag['source_sink.in']==1:
-        print('generate source_sink.in')
+        print('writing source_sink.in')
         gd=loadz(p.grd).hgrid
         gd.compute_ctr()
         f = open("source_sink.in", "w")
@@ -726,7 +726,7 @@ if 1 in [p.flag[fname] for fname in ['source_sink.in','vsource.th','msource.th']
             data=c_[data,tmp]
                     
         fp=data<0
-        if sum(fp)>0: print('there is negative flow; zero value will be used')
+        if sum(fp)>0: print('    there is negative flow; zero value will be used')
         data[data<0]=0
         with open('vsource.th','w') as f:
             mat = np.matrix(data)
@@ -753,7 +753,7 @@ if 1 in [p.flag[fname] for fname in ['source_sink.in','vsource.th','msource.th']
             data=c_[data,tmp]
         
         data=c_[data,0*data[:,1:]] #add salinity
-        print('generate msource.in')
+        print('writing msource.th')
         with open('msource.th','w') as f:
             mat = np.matrix(data)
             for line in mat:
@@ -777,8 +777,8 @@ if p.flag['sflux']==1:
        #link each file
        year=num2date(ti).year; month=num2date(ti).month; day=num2date(ti).day
        for m,svar in enumerate(svars):
-           fname='{}/sflux_{}.{:04d}_{:02d}_{:02d}.nc'.format(p.sflux,svar,year,month,day)
-           os.symlink(os.path.relpath(fname),'sflux_{}_{}.{:04d}.nc'.format(svar,itag,irec+1))
+           fname='{}/sflux_{}.{:04d}_{:02d}_{:02d}.nc'.format(p.sflux_dir,svar,year,month,day)
+           os.system('ln -sf ../{} sflux_{}_{}.{:04d}.nc'.format(fname,svar,itag,irec+1))
            if m==1 and month==1 and day==1: print('    sflux: {:04d}-{:02d}-{:02d}'.format(year,month,day))
    #write sflux_inputs.txt
    fid=open('{}/sflux_inputs.txt'.format(tdir),'w+'); fid.write('&sflux_inputs\n   \n/'); fid.close()
@@ -793,13 +793,14 @@ if p.flag['check']==1:
 #%% ==========================================================================
 # xxx 
 #=============================================================================
-if p.flag['run']==1:
+if p.flag['run femto']==1:
+    print('run the model on FEMTO')
     tmp=os.getcwd().split('/')
     run=tmp[-1]
     if os.path.exists(f'../../{run}'): os.system(f'rm -rf ../../{run}')
     os.mkdir(f'../../{run}')
-    cmd=f'cd ../{p.setup_dir}; cp param.nml run.sciclone run.frontera mkoutput.py ../../{run}'
+    cmd=f'cd {p.setup_dir}; cp pschism_FEMTO_TVD-VL.07e4b6e3 param.nml run.sciclone run.frontera mkoutput.py ../../{run}'
     print(cmd); os.system(cmd)
-    cmd=f'cd ../../{run}; ./mkoutput.py; ln -sf ../Inputs/{run}/* .; rm zfig*.png'
+    cmd=f'cd ../../{run}; ./mkoutput.py; ln -sf ../Inputs/{run}/* .; rm zfig*.png; ./run.sciclone'
     print(cmd); os.system(cmd)
 
