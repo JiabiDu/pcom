@@ -5,28 +5,28 @@ close("all")
 p=zdata(); p.flag={}  #parameters
 p.begin_time =  datenum(2018,1,1)
 p.end_time   =  datenum(2019,1,1)
-p.grid_dir   = '../../Grids/V1b'
+p.grid_dir   = '../../Grids/V1c'
 p.tide_dir       = r'/sciclone/data10/wangzg/FES2014'   #FES2014 database '
 p.hycom_dir  = '../../Observations/hycom/Data/'
 p.flow_dir   = '../../Observations/usgs_flow/npz/'
 p.temp_dir   = '../../Observations/usgs_temp/npz/'
 p.sflux_dir  = '../sflux'  #have to be relative path
 p.setup_dir  = '../setup_files'
-p.flag['*.gr3']          =       0    
-p.flag['tvd.prop']       =       0
-p.flag['bctides.in']     =       0
-p.flag['hotstart.nc']    =       0
-p.flag['elev2D.th.nc']   =       0
-p.flag['TEM_3D.th.nc']   =       0
-p.flag['SAL_3D.th.nc']   =       0
-p.flag['uv3D.th.nc']     =       0
-p.flag['TEM_nu.nc']      =       0
-p.flag['SAL_nu.nc']      =       0
-p.flag['source_sink.in'] =       0
-p.flag['vsource.th']     =       0
-p.flag['msource.th']     =       0
-p.flag['sflux']          =       0
-p.flag['check']          =       0
+p.flag['*.gr3']          =       1    
+p.flag['tvd.prop']       =       1
+p.flag['bctides.in']     =       1
+p.flag['hotstart.nc']    =       1
+p.flag['elev2D.th.nc']   =       1
+p.flag['TEM_3D.th.nc']   =       1
+p.flag['SAL_3D.th.nc']   =       1
+p.flag['uv3D.th.nc']     =       1
+p.flag['TEM_nu.nc']      =       1
+p.flag['SAL_nu.nc']      =       1
+p.flag['source_sink.in'] =       1
+p.flag['vsource.th']     =       1
+p.flag['msource.th']     =       1
+p.flag['sflux']          =       1
+p.flag['check']          =       1
 p.flag['run femto']      =       1  #run the model on sciclone; must run this script on femto node
 #%% ===========================================================================
 # copy grid files
