@@ -4,30 +4,32 @@ close("all")
 
 p=zdata(); p.flag={}  #parameters
 p.begin_time =  datenum(2018,1,1)
-p.end_time   =  datenum(2019,1,1)
-p.grid_dir   = '../../Grids/V1c'
-p.tide_dir       = r'/sciclone/data10/wangzg/FES2014'   #FES2014 database '
-p.hycom_dir  = '../../Observations/hycom/Data/'
-p.flow_dir   = '../../Observations/usgs_flow/npz/'
-p.temp_dir   = '../../Observations/usgs_temp/npz/'
-p.sflux_dir  = '../sflux'  #have to be relative path
-p.setup_dir  = '../setup_files'
-p.flag['*.gr3']          =       1    
-p.flag['tvd.prop']       =       1
-p.flag['bctides.in']     =       1
+p.end_time   =  datenum(2019,1,1)                 
+p.grid_dir   = '../../Grids/V1c'                  #grid, including hgrid.ll, hgrid.gr3,grid.npz,vgrid.in, rivers.bp
+p.tide_dir   = r'/sciclone/data10/wangzg/FES2014' #FES tide and script to ajust nodal
+p.hycom_dir  = '../../Observations/hycom/Data/'   #hycom data
+p.flow_dir   = '../../Observations/usgs_flow/npz/'#flow data, used in vsource.th
+p.temp_dir   = '../../Observations/usgs_temp/npz/'#temperature data, used in msource.th
+p.sflux_dir  = '../sflux'                         #have to be relative path
+p.setup_dir  = '../setup_files'                   #including files other than the forcing files generated here
+p.hot_base   = '../setup_files/2018_sz_40layer.npz' #from previous run, only for grids with depth less than 30m
+
+p.flag['*.gr3']          =       0    
+p.flag['tvd.prop']       =       0
+p.flag['bctides.in']     =       0
 p.flag['hotstart.nc']    =       1
-p.flag['elev2D.th.nc']   =       1
-p.flag['TEM_3D.th.nc']   =       1
-p.flag['SAL_3D.th.nc']   =       1
-p.flag['uv3D.th.nc']     =       1
-p.flag['TEM_nu.nc']      =       1
-p.flag['SAL_nu.nc']      =       1
-p.flag['source_sink.in'] =       1
-p.flag['vsource.th']     =       1
-p.flag['msource.th']     =       1
-p.flag['sflux']          =       1
+p.flag['elev2D.th.nc']   =       0
+p.flag['TEM_3D.th.nc']   =       0
+p.flag['SAL_3D.th.nc']   =       0
+p.flag['uv3D.th.nc']     =       0
+p.flag['TEM_nu.nc']      =       0
+p.flag['SAL_nu.nc']      =       0
+p.flag['source_sink.in'] =       0
+p.flag['vsource.th']     =       0
+p.flag['msource.th']     =       0
+p.flag['sflux']          =       0
 p.flag['check']          =       1
-p.flag['run femto']      =       1  #run the model on sciclone; must run this script on femto node
+p.flag['run sciclone']   =       0                #prepare model run on sciclone
 #%% ===========================================================================
 # copy grid files
 #==============================================================================
@@ -290,6 +292,31 @@ if p.flag['hotstart.nc']:
     for itr in [0,1]:
         print(f'min and max for tracer #{itr} on node: ',tr_nd[:,:,itr].min(),tr_nd[:,:,itr].max())
         print(f'min and max for tracer #{itr} on elem: ',tr_el[:,:,itr].min(),tr_el[:,:,itr].max())
+
+    if p.hot_base != None:
+        C=loadz(p.hot_base) #be careful of nan value in C
+        if nvrt!=len(C.salt[0]): print(f'layer number not consistent with {p.hot_base}',nvrt, len(C.salt[0]))
+        mxy=c_[C.x,C.y]
+        bxy=c_[gd.x,gd.y]
+        fp=gd.dp<=30 
+        for k in arange(nvrt):
+            print('interpolation for layer',k,'from',p.hot_base)
+            tmptemp,tmpsalt=C.temp[:,k], C.salt[:,k]
+            mfp=(abs(tmptemp)<99)*(abs(tmpsalt)<99)
+            nd.tr_nd.val[fp,k,0]=sp.interpolate.griddata(mxy[mfp],tmptemp[mfp],bxy[fp],'nearest',rescale=True)
+            nd.tr_nd.val[fp,k,1]=sp.interpolate.griddata(mxy[mfp],tmpsalt[mfp],bxy[fp],'nearest',rescale=True)
+            nd.tr_el.val[:,k,0]=gd.interp_node_to_elem(value=nd.tr_nd.val[:,k,0]) #to element
+            nd.tr_el.val[:,k,1]=gd.interp_node_to_elem(value=nd.tr_nd.val[:,k,1]) #to element
+        nd.tr_nd0.val=nd.tr_nd.val
+        print('min and max of salt',nd.tr_nd.val[:,:,1].min(),nd.tr_nd.val[:,:,1].max())
+        print('min and max of temp',nd.tr_nd.val[:,:,0].min(),nd.tr_nd.val[:,:,0].max())
+        if sum(abs(nd.tr_nd.val)>99)>0: ppp
+        if p.flag['check']==1:
+            figure(figsize=[12,12])
+            subplot(2,1,1); gd.plot(fmt=1,value=nd.tr_nd.val[:,-1,1],cmap='jet',clim=[0,36]); title('SSS')
+            subplot(2,1,2); gd.plot(fmt=1,value=nd.tr_nd.val[:,-1,0],cmap='jet',clim=[0,30]); title('SST')
+            savefig('zfig_hotstart_surface_TS.png')
+        
     WriteNC('hotstart.nc',nd)
 
 #%%============================================================================
@@ -791,9 +818,9 @@ if p.flag['check']==1:
     pass
 
 #%% ==========================================================================
-# xxx 
+# preapre files for a new run (same name as current folder)
 #=============================================================================
-if p.flag['run femto']==1:
+if p.flag['run sciclone']==1:
     print('run the model on FEMTO')
     tmp=os.getcwd().split('/')
     run=tmp[-1]
@@ -801,6 +828,6 @@ if p.flag['run femto']==1:
     os.mkdir(f'../../{run}')
     cmd=f'cd {p.setup_dir}; cp pschism_FEMTO_TVD-VL.07e4b6e3 param.nml run.sciclone run.frontera mkoutput.py ../../{run}'
     print(cmd); os.system(cmd)
-    cmd=f'cd ../../{run}; ./mkoutput.py; ln -sf ../Inputs/{run}/* .; rm zfig*.png; ./run.sciclone'
+    cmd=f'cd ../../{run}; ./mkoutput.py; ln -sf ../Inputs/{run}/* .; rm zfig*.png'
     print(cmd); os.system(cmd)
 
