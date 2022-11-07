@@ -5,31 +5,32 @@ close("all")
 p=zdata(); p.flag={}  #parameters
 p.begin_time =  datenum(2018,1,1)
 p.end_time   =  datenum(2019,1,1)                 
-p.grid_dir   = '../../Grids/V1c'                  #grid, including hgrid.ll, hgrid.gr3,grid.npz,vgrid.in, rivers.bp
+p.grid_dir   = '../../Grids/V1f-sz47'                  #grid, including hgrid.ll, hgrid.gr3,grid.npz,vgrid.in, rivers.bp
+p.hot_base   = '../setup_files/2018_lsc2_46layer.npz' #from previous run, only for grids with depth less than 30m
+p.hot_base_h = 20                                 #depth for which the hot_base will be used. deeper water will still base on hycom
 p.tide_dir   = r'/sciclone/data10/wangzg/FES2014' #FES tide and script to ajust nodal
 p.hycom_dir  = '../../Observations/hycom/Data/'   #hycom data
 p.flow_dir   = '../../Observations/usgs_flow/npz/'#flow data, used in vsource.th
 p.temp_dir   = '../../Observations/usgs_temp/npz/'#temperature data, used in msource.th
 p.sflux_dir  = '../sflux'                         #have to be relative path
 p.setup_dir  = '../setup_files'                   #including files other than the forcing files generated here
-p.hot_base   = '../setup_files/2018_sz_40layer.npz' #from previous run, only for grids with depth less than 30m
 
-p.flag['*.gr3']          =       0    
-p.flag['tvd.prop']       =       0
-p.flag['bctides.in']     =       0
+p.flag['*.gr3']          =       1    
+p.flag['tvd.prop']       =       1
+p.flag['bctides.in']     =       1
 p.flag['hotstart.nc']    =       1
-p.flag['elev2D.th.nc']   =       0
-p.flag['TEM_3D.th.nc']   =       0
-p.flag['SAL_3D.th.nc']   =       0
-p.flag['uv3D.th.nc']     =       0
-p.flag['TEM_nu.nc']      =       0
-p.flag['SAL_nu.nc']      =       0
-p.flag['source_sink.in'] =       0
-p.flag['vsource.th']     =       0
-p.flag['msource.th']     =       0
-p.flag['sflux']          =       0
+p.flag['elev2D.th.nc']   =       1
+p.flag['TEM_3D.th.nc']   =       1
+p.flag['SAL_3D.th.nc']   =       1
+p.flag['uv3D.th.nc']     =       1
+p.flag['TEM_nu.nc']      =       1
+p.flag['SAL_nu.nc']      =       1
+p.flag['source_sink.in'] =       1
+p.flag['vsource.th']     =       1
+p.flag['msource.th']     =       1
+p.flag['sflux']          =       1
 p.flag['check']          =       1
-p.flag['run sciclone']   =       0                #prepare model run on sciclone
+p.flag['run sciclone']   =       1                #prepare model run on sciclone
 #%% ===========================================================================
 # copy grid files
 #==============================================================================
@@ -295,13 +296,14 @@ if p.flag['hotstart.nc']:
 
     if p.hot_base != None:
         C=loadz(p.hot_base) #be careful of nan value in C
-        if nvrt!=len(C.salt[0]): print(f'layer number not consistent with {p.hot_base}',nvrt, len(C.salt[0]))
+        if nvrt!=len(C.salt[0]): print(f'warning! layer number not consistent with {p.hot_base}',nvrt, len(C.salt[0]))
+
         mxy=c_[C.x,C.y]
         bxy=c_[gd.x,gd.y]
-        fp=gd.dp<=30 
+        fp=gd.dp<=p.hot_base_h 
         for k in arange(nvrt):
-            print('interpolation for layer',k,'from',p.hot_base)
-            tmptemp,tmpsalt=C.temp[:,k], C.salt[:,k]
+            print('interpolation for layer',k,'from',p.hot_base,min(len(C.salt[0])-1,k))
+            tmptemp,tmpsalt=C.temp[:,min(len(C.salt[0])-1,k)], C.salt[:,min(len(C.salt[0])-1,k)]
             mfp=(abs(tmptemp)<99)*(abs(tmpsalt)<99)
             nd.tr_nd.val[fp,k,0]=sp.interpolate.griddata(mxy[mfp],tmptemp[mfp],bxy[fp],'nearest',rescale=True)
             nd.tr_nd.val[fp,k,1]=sp.interpolate.griddata(mxy[mfp],tmpsalt[mfp],bxy[fp],'nearest',rescale=True)
@@ -316,6 +318,7 @@ if p.flag['hotstart.nc']:
             subplot(2,1,1); gd.plot(fmt=1,value=nd.tr_nd.val[:,-1,1],cmap='jet',clim=[0,36]); title('SSS')
             subplot(2,1,2); gd.plot(fmt=1,value=nd.tr_nd.val[:,-1,0],cmap='jet',clim=[0,30]); title('SST')
             savefig('zfig_hotstart_surface_TS.png')
+            close('all')
         
     WriteNC('hotstart.nc',nd)
 
@@ -698,7 +701,7 @@ if 1 in [p.flag[fname] for fname in ['source_sink.in','vsource.th','msource.th']
             'San Fernando Creek':['08211900',-97.773413, 27.400734,1,'NOAA8776604'], #into Baffin Bay
             'Los Olmos Creek':['08212400',-97.795990, 27.273561,1,'NOAA8776604']} #into Baffin Bay
     #only rivers in bp.station will be used
-    bp=read_schism_bpfile(p.grid_dir+'/rivers.bp')
+    close('all'); bp=read_schism_bpfile(p.grid_dir+'/rivers.bp')  #if some figure is openned, read_bp will lead to error
     bp.station=['Alabama River','Tombigbee River','Mississippi River','Atchafalaya River','Calcasieu River',
                 'Sabine River','Neches River','Trinity River','San Jancinto River',  'Buffalo Bayou',
                 'Chocolate Bayou', 'Brazos River', 'Colorado River','Guadalupe River','Nueces River', 
