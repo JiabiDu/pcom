@@ -72,7 +72,7 @@ def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
     f.close()
 
 #%% mode-observaiton comparison related
-def pair_data(x1,y1,x2,y2,hw=0.2/24):
+def pair_data(x1,y1,x2,y2,hw=0.2/24,remove_nan=False):
     ''' 
     pair data within a certain of time window
     used to compare model and observation data
@@ -83,6 +83,7 @@ def pair_data(x1,y1,x2,y2,hw=0.2/24):
         fp=abs(ix-x2)<hw
         if sum(fp)==0: continue
         if sum(fp)>1: print('multiple value will be avearged')
+        if remove_nan and (isnan(iy) or isnan(nanmean(y2[fp]))): continue
         py1.append(iy)
         py2.append(nanmean(y2[fp]))
     return array(py1),array(py2)
