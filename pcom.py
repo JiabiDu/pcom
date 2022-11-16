@@ -72,7 +72,7 @@ def gen_bpfile(lons,lats,stations,deps=0.0,fname='station.bp',cmt='station.bp'):
     f.close()
 
 #%% mode-observaiton comparison related
-def pair_data(x1,y1,x2,y2,hw=0.2/24,remove_nan=False):
+def pair_data(x1,y1,x2,y2,hw=0.2/24,remove_nan=True):
     ''' 
     pair data within a certain of time window
     used to compare model and observation data
@@ -834,3 +834,51 @@ def download_ndbc(year=2012):
 def get_skill(x1,y1,x2,y2):
     py1,py2=pair_data(x1,y1,x2,y2,hw=0.2/24)
     return get_stat(py1,py2,fmt=0)
+
+def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='2022-01-01T00:00:00',end_time='2032-01-01T00:00:00',
+                   just_update=True,isplot=False,var='sea_water_salinity'):
+    '''
+    For API details, see https://buoybay.noaa.gov/data/api
+    '''
+    print('--- get_cbibs_data')
+    if os.path.exists(sname) and just_update:
+        #change the start_time
+        S=loadz(sname)
+        start_time=num2date(S.time[-1]).strftime("%Y-%m-%dT%H:%M:%S")
+        print('change start_time to ',start_time)
+        
+    apikey='f159959c117f473477edbdf3245cc2a4831ac61f'
+    url=f'https://mw.buoybay.noaa.gov/api/v1/json/query/{station}?key={apikey}&sd={start_time}z&ed={end_time}z&var={var}'
+    urlsave(url,'tmp.json') #reading data
+    print('finish reading buoy data')
+    #process the json data
+    print('reading json')
+    with open('tmp.json') as f: jdata = json.load(f)
+    time,data=[],[]
+    for i in jdata['stations'][0]['variable'][0]['measurements']:
+        time.append(i['time'])
+        data.append(i['value'])
+    print('finish reading json')
+    time=datenum(time)
+    print('finish datenum')
+    time,data=array(time),array(data)
+    ind=argsort(time)
+    time,data=time[ind],data[ind]
+    data=data.astype('float')
+    if os.path.exists(sname) and just_update:
+        fp=time>S.time.max()
+        if sum(fp)==0: print('no new records'); return
+        S.time=concatenate([S.time,time[fp]]) #append the latest records
+        S.data=concatenate([S.data,data[fp]])
+        print('append records: ',sum(fp))
+    else:
+        S=zdata()
+        S.time,S.data=time,data.astype('float')
+    S.data[S.data>35]=nan
+    S.data[S.data<=1]=nan
+    savez(sname,S)
+    if isplot: figure(figsize=[10,3]);  plot(S.time,S.data); set_xtick(fmt=1)
+
+def updated(sname,fnames):
+    return os.path.exists(sname) and all([os.path.getmtime(sname)>os.path.getmtime(fname) for fname in fnames])
+
