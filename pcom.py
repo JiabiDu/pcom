@@ -840,7 +840,7 @@ def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='20
     '''
     For API details, see https://buoybay.noaa.gov/data/api
     '''
-    print('--- get_cbibs_data')
+    print('--- get_cbibs_data for station',station,start_time,end_time)
     if os.path.exists(sname) and just_update:
         #change the start_time
         S=loadz(sname)
@@ -859,6 +859,7 @@ def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='20
         time.append(i['time'])
         data.append(i['value'])
     print('finish reading json')
+    if len(time)==0: print('no data found'); return
     time=datenum(time)
     print('finish datenum')
     time,data=array(time),array(data)
@@ -872,11 +873,13 @@ def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='20
         S.data=concatenate([S.data,data[fp]])
         print('append records: ',sum(fp))
     else:
+        print('save records')
         S=zdata()
         S.time,S.data=time,data.astype('float')
     S.data[S.data>35]=nan
     S.data[S.data<=1]=nan
     savez(sname,S)
+    print(sname)
     if isplot: figure(figsize=[10,3]);  plot(S.time,S.data); set_xtick(fmt=1)
 
 def updated(sname,fnames):
