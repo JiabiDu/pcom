@@ -840,7 +840,7 @@ def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='20
     '''
     For API details, see https://buoybay.noaa.gov/data/api
     '''
-    print('--- get_cbibs_data for station',station,start_time,end_time)
+    print(f'--- get_cbibs_data for {var} at station {station}',start_time[0:10],end_time[0:10])
     if os.path.exists(sname) and just_update:
         #change the start_time
         S=loadz(sname)
@@ -876,8 +876,9 @@ def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='20
         print('save records')
         S=zdata()
         S.time,S.data=time,data.astype('float')
-    S.data[S.data>35]=nan
-    S.data[S.data<=1]=nan
+    if var=='sea_water_salinity':
+        S.data[S.data>35]=nan
+        S.data[S.data<=1]=nan
     savez(sname,S)
     print(sname)
     if isplot: figure(figsize=[10,3]);  plot(S.time,S.data); set_xtick(fmt=1)
