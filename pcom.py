@@ -849,8 +849,12 @@ def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='20
         
     apikey='f159959c117f473477edbdf3245cc2a4831ac61f'
     url=f'https://mw.buoybay.noaa.gov/api/v1/json/query/{station}?key={apikey}&sd={start_time}z&ed={end_time}z&var={var}'
-    urlsave(url,'tmp.json') #reading data
-    print('finish reading buoy data')
+    try: 
+        urlsave(url,'tmp.json') #reading data
+        print('finish get buoy data from remote')
+    except:
+        print('some error in getting data from',url)
+        return
     #process the json data
     print('reading json')
     with open('tmp.json') as f: jdata = json.load(f)
