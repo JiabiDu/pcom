@@ -100,6 +100,70 @@ def kde_plot(x,y,ms=1):
     scatter(x, y, c=z, s=ms)
 
 #%% Data downloading
+def get_cbp_data(years=[1984,2022],stations=[1325,1328],pstr='63,78',sdir='data/cbp_nutrient/',sname='data/cbp_nutrient.npz',download_again=False):
+    #------------------------------------------------------------------------------
+    #download data
+    #------------------------------------------------------------------------------
+    nowtime=datetime.datetime.now().strftime("%Y-%m-%d")
+    url0='http://data.chesapeakebay.net/api.CSV/WaterQuality/WaterQuality/1-1-{}/12-31-{}/0,1/2,4,6/12,13,15,35,36,2,3,7,33,34,23,24/Station'.format(*years)
+    if not os.path.exists(sdir): os.mkdir(sdir)
+    #download data for each station
+    for m,station in enumerate(stations):
+        url='{}/{}/{}'.format(url0,station,pstr)
+        fname='{}/{}_{}_{}.csv'.format(sdir,station,years[0],years[-1])
+        if os.path.exists(fname) and os.path.getmtime(fname)>=time.time()-3600*6 and not download_again: print(fname,'exists and updated'); continue
+        print('download: {}, {}/{}'.format(station,m+1,len(stations)))
+        try:
+            urlsave(url,fname)
+        except:
+            print(f'no data found for {station}')
+            pass
+        if os.path.getsize(fname)<500: os.remove(fname)
+    
+    #------------------------------------------------------------------------------
+    #read data
+    #------------------------------------------------------------------------------
+    fnames=array([sdir+i for i in os.listdir(sdir) if i.endswith('.csv')]) #get all data files
+    if updated(sname,fnames): print(sname,'exists and updated'); return
+    svars=array(['Station','SampleDate','SampleTime','TotalDepth','Depth','Layer','Parameter','MeasureValue','Unit','Latitude','Longitude'])
+    mvars=array(['station','date','time','tdepth','depth','layer','var','data','unit','lat','lon'])
+    S=zdata(); 
+    for i in mvars: exec('S.{}=[]'.format(i))
+    for m,fname in enumerate(fnames):
+        print('reading: {}, {}/{}'.format(fname,m,len(fnames)))
+        #read all fields
+        try:
+            lines=array([i.strip().replace('"','').split(',') for i in open(fname,'r').readlines() if len(i)>50])
+        except:
+            lines=array([i.strip().replace('"','').split(',') for i in open(fname,'r',encoding='cp850').readlines() if len(i)>50])
+            
+        #remove invalid line
+        tl=lines[0]; fp=array([nonzero(tl==i)[0][0] for i in svars]); lines=lines[1:,fp]
+        fpn=lines[:,7]!=''; lines=lines[fpn]
+    
+        #assign -999 to empty field
+        fpn=lines[:,3]==''; lines[fpn,3]='-999'
+        fpn=lines[:,4]==''; lines[fpn,4]='-999'
+    
+        #save each variables
+        for n,mvar in enumerate(mvars): exec('S.{}.extend(lines[:,{}])'.format(mvar,n))
+    
+    #orgnaize data, change format
+    for i in mvars: exec('S.{}=array(S.{})'.format(i,i))
+    S.tdepth=S.tdepth.astype('float32'); S.depth=S.depth.astype('float32'); S.data=S.data.astype('float')
+    S.lat=S.lat.astype('float'); S.lon=S.lon.astype('float')
+    
+    #get time
+    S.time=datestr2num(array(['{} {}'.format(i,j) for i,j in zip(S.date,S.time)])); del S.date
+    
+    #try to shrink data
+    uvars=unique(S.var); S.unit=dict(zip(uvars, array([unique(S.unit[S.var==i])[0] for i in uvars])))
+    stations=unique(S.station); S.lon=dict(zip(stations, squeeze(array([unique(S.lon[S.station==i]) for i in stations]))))
+    stations=unique(S.station); S.lat=dict(zip(stations, squeeze(array([unique(S.lat[S.station==i]) for i in stations]))))
+    
+    #save data
+    savez(sname,S)
+
 def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reRead=False,sdir=None, reDownload=False):
     y1=num2date(datenum(StartT)).year; y2=num2date(datenum(EndT)-1/24).year
     if sdir is None: sdir=f'usgs_{y1}_{y2}'
