@@ -515,7 +515,7 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
     print('== read noaa tide and current data ==')
     if not sdir.endswith('/'): sdir=sdir+'/'
     for varname in varnames: #['wind','hourly_height','water_temp','air_temp','conductivity']:
-        if len(stations)==1: sname='{}{}_{}_{}_{}'.format(sname_pre,station,varname,years[0],years[-1])
+        if len(stations)==1: sname='{}{}_{}_{}_{}'.format(sname_pre,stations[0],varname,years[0],years[-1])
         if len(stations)>1: sname='{}{}_{}_{}'.format(sname_pre,varname,years[0],years[-1])
         if os.path.isfile(sname+'.npz') and not read_again: print('file exist '+sname+'.npz'); continue
         time=[] #initialize the list, list is extentable
@@ -540,7 +540,7 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
         data=array(data)
         data[data=='']='NaN'
         data=data.astype('float')
-        fp=[data!=nan]
+        fp=~isnan(data)
         data=data[fp]
         S.station=array(station)[fp]
         S.time=array(time)[fp]
