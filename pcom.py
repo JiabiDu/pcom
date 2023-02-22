@@ -954,3 +954,14 @@ def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='20
 def updated(sname,fnames):
     return os.path.exists(sname) and all([os.path.getmtime(sname)>os.path.getmtime(fname) for fname in fnames])
 
+
+def get_direction(u,v):
+    if v==0:
+        if u>0: return 90
+        if u<0: return 270
+        if u==0: return 0
+    else:
+        direction=atan(u/v)*180/pi
+        if v<0: direction=direction+180
+    return direction%360
+
