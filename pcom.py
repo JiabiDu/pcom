@@ -4,6 +4,7 @@ from pylib import *
 import json
 from scipy.stats import gaussian_kde
 from scipy.interpolate import griddata
+from math import atan
 #================================================================
 # AUTHOR NOTES
 # This package is used for Coastal Ocean Modelling
@@ -954,7 +955,6 @@ def get_cbibs_data(station='YS',sname='data/cbibs_YS/YS_salt.npz',start_time='20
 def updated(sname,fnames):
     return os.path.exists(sname) and all([os.path.getmtime(sname)>os.path.getmtime(fname) for fname in fnames])
 
-
 def get_direction(u,v):
     if v==0:
         if u>0: return 90
@@ -964,4 +964,24 @@ def get_direction(u,v):
         direction=atan(u/v)*180/pi
         if v<0: direction=direction+180
     return direction%360
+
+def find_peaks(x,y,hw=10):
+    peaks,peaktimes=[],[]
+    for m,yi in enumerate(y):
+        if yi>=y[max(0,m-hw):min(m+hw,len(y))].min():
+            peaks.append(yi)
+            peaktimes.append(x[m])
+    return array(peaktimes),array(peaks)
+
+def find_troughs(x,y,hw=10):
+    troughs,troughtimes=[],[]
+    for m,yi in enumerate(y):
+        if yi<=y[max(0,m-hw):min(m+hw,len(y))].min():
+            troughs.append(yi)
+            troughtimes.append(x[m])
+    return array(troughtimes),array(troughs)
+
+def nearest(xi,x):
+    dx=abs(xi-x)
+    return nonzero(dx==dx.min())[0]
 
