@@ -985,3 +985,8 @@ def nearest(xi,x):
     dx=abs(xi-x)
     return nonzero(dx==dx.min())[0]
 
+def gap(rel=[1.05,0,0.05,1]): #get subset position based on current one
+    #default rel is to add a colorbar
+    a=gca().get_position()
+    pos=[a.x0,a.y0,a.width,a.height]
+    return [pos[0]+pos[2]*rel[0],pos[1]+pos[1]*rel[1],pos[2]*rel[2],pos[3]*rel[3]]
