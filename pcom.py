@@ -219,7 +219,7 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
             mtime.extend(mti)
             flow.extend(flowi)
         #save data
-        flow=array(flow); fpn=~((flow=='')|(flow=='Ssn')|(flow=='Eqp')|(flow=='***')|(flow=='Mnt'))
+        flow=array(flow); fpn=~((flow=='Ice')|(flow=='')|(flow=='Ssn')|(flow=='Eqp')|(flow=='***')|(flow=='Mnt'))
         S=zdata()
         S.station=array(station)[fpn]
         S.time=array(mtime)[fpn]
