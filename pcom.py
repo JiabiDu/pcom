@@ -968,7 +968,7 @@ def get_direction(u,v):
 def find_peaks(x,y,hw=10):
     peaks,peaktimes=[],[]
     for m,yi in enumerate(y):
-        if yi>=y[max(0,m-hw):min(m+hw,len(y))].min():
+        if yi>=y[max(0,m-hw):min(m+hw,len(y))].max():
             peaks.append(yi)
             peaktimes.append(x[m])
     return array(peaktimes),array(peaks)
