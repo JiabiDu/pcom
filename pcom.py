@@ -511,7 +511,6 @@ def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=
     2. for each api option see: https://api.tidesandcurrents.noaa.gov/api/prod/
     3. api helper in https://tidesandcurrents.noaa.gov/api-helper/url-generator.html
     '''
-
 def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=['hourly_height'],sname_pre='npz/',sdir='data/',read_again=False):
     print('== read noaa tide and current data ==')
     if not sdir.endswith('/'): sdir=sdir+'/'
@@ -523,19 +522,19 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
         data=[]
         station=[]
         if varname=='wind': data2=[] #for wind direction
-        for stid in stations:
+        for m,stid in enumerate(stations):
             for year in years:
                 fname='{}{}_{}_{}.csv'.format(sdir,varname,stid,year)
-                print('reading '+fname)
+                print(m+1,'reading '+fname)
                 if not os.path.isfile(fname) or os.path.getsize(fname)<1e3:continue #if not exist or file size less than 1kb
                 tdata=array([i.split(',') for i in open(fname,'r').readlines() if i.startswith(str(year))])
                 time.extend(datenum(tdata[:,0]))
-                data.extend(tdata[:,1]) 
-                if varname=='wind': data2.extend(tdata[:,2]) 
+                data.extend(tdata[:,1])
+                if varname=='wind': data2.extend(tdata[:,2])
                 station.extend(list(full([len(tdata),],stid)))
-            
+
         S=zdata()
-        
+
         # remove nan values
         station=array(station)
         data=array(data)
@@ -543,16 +542,17 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
         data=data.astype('float')
         fp=~isnan(data)
         data=data[fp]
+        if varname=='wind': data2=array(data2); data2=data2[fp]
         S.station=array(station)[fp]
         S.time=array(time)[fp]
-        
+
         #remove spiking values within a given station
         if varname=='water_temperature':
             print(f'remove spiking vlaue for {varname}')
             for m,value in enumerate(data):
                 if m==0: continue
                 if abs(value-data[m-1])>5 and station[m]==station[m-1]:
-                    data[m]='NaN'                    
+                    data[m]='NaN'
         if varname=='wind':
             data2=array(data2)
             data2[data2=='']='NaN'
@@ -566,8 +566,6 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
             S.data=data.astype('float')
         savez(sname,S)
         print(f'data saved into {sname}.npz')
-
-
 
 #%% Data processing
 
