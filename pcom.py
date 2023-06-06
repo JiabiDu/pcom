@@ -526,7 +526,7 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
             for year in years:
                 fname='{}{}_{}_{}.csv'.format(sdir,varname,stid,year)
                 print(m+1,'reading '+fname)
-                if not os.path.isfile(fname) or os.path.getsize(fname)<1e3:continue #if not exist or file size less than 1kb
+                if not os.path.isfile(fname) or os.path.getsize(fname)<1e3: print('not exist'); continue #if not exist or file size less than 1kb
                 tdata=array([i.split(',') for i in open(fname,'r').readlines() if i.startswith(str(year))])
                 time.extend(datenum(tdata[:,0]))
                 data.extend(tdata[:,1])
