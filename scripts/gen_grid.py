@@ -10,10 +10,10 @@ prj='epsg:4326'  #projection of grd
 bxy='../base/bxy.bp' #lon&lat of bnd nodes
 headers=("etopo1","crm_3arcs","cdem13_",'ncei19_2019v1_',"cb_bay_dem_v3.1_ll") #DEM headers
 headers=("etopo1","ncei19_MS_LA", "ncei19_AL_nwFL","ncei19_TX")
-
 bdir=r'/scratch/user/jdu/DEM/npz'  #directory of DEM data
 ogd=read_schism_hgrid('../v000/hgrid.gr3') #bathymetry in east Miss is used.  
 use_lsc2=False
+
 #----------------------------------------------------------------------
 #get hgrid.gr3, hgrid.ll and vgrid.in
 #----------------------------------------------------------------------
