@@ -1009,3 +1009,34 @@ def rtext(x,y,note,xm=None,ym=None,ax=None,**args):
     if xm is None: xm=xlim()
     if ym is None: ym=ylim()
     text(xm[0]+x*diff(xm),ym[0]+y*diff(ym),note,**args)
+
+def extract_sflux(olon= -94.752329,olat=29.351558,sdir='../run17c2/sflux/',sname='narr_galveston.npz'):
+    '''
+    Extract data from sflux nc files for a specific location; now for air only. 
+      olon,olat: location of target
+      sdir: sflux directory
+      sname: name of npz file to store the data
+    '''
+    if not sdir.endswith('/'):sdir=sdir+'/'
+    nc='sflux_air_1.0001.nc'
+    c=ReadNC(sdir+nc)
+    dist=sqrt((c.lon.val-olon)**2+(c.lat.val-olat)**2)
+    fp=(dist==dist.min()); fp=nonzero(fp)
+    ilon,ilat=fp[0][0],fp[1][0]
+    #%
+    fnames=[i for i in os.listdir(sdir) if 'air' in i]
+    fnames.sort()
+    u,v,t,h,p,time=[],[],[],[],[],[]
+    for m,fname in enumerate(fnames):
+        print(sdir+fname)
+        c=ReadNC(sdir+fname,fmt=1)
+        u.extend(c['uwind'][:,ilon,ilat])
+        v.extend(c['vwind'][:,ilon,ilat])
+        t.extend(c['stmp'][:,ilon,ilat])
+        h.extend(c['spfh'][:,ilon,ilat])
+        p.extend(c['prmsl'][:,ilon,ilat])
+        time.extend(datenum(2018,1,1)+m+c['time'][:])
+    u,v,t,time,p,h=array(u),array(v),array(t),array(time),array(p),array(h)
+    C=zdata()
+    C.u,C.v,C.t,C.time,C.p,C.h=u,v,t,time,p,h
+    print(sname); savez(sname,C)
