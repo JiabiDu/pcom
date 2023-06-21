@@ -248,7 +248,7 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
 def get_usgs_temp(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reRead=False,sdir=None):
     y1=num2date(datenum(StartT)).year; y2=num2date(datenum(EndT)-1/24).year
     if sdir is None: sdir=f'usgs_temp_{y1}_{y2}'
-    if not os.path.exists(sdir): os.mkdir(sdir)
+    os.makedirs(sdir,exist_ok=True)
     if not os.path.exists('figs'): os.mkdir('figs')
     if sname is None: sname=f'npz/usgs_temp_{y1}_{y2}'
     
@@ -511,12 +511,28 @@ def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=
     2. for each api option see: https://api.tidesandcurrents.noaa.gov/api/prod/
     3. api helper in https://tidesandcurrents.noaa.gov/api-helper/url-generator.html
     '''
-def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=['hourly_height'],sname_pre='npz/',sdir='data/',read_again=False):
+def get_noaa_predict_tide(sname='data/noaa_ptide.npz',year=2022,stations=['8637689',],sdir='./',load_again=False):
+    if os.path.exists(sname) and not load_again: print(sname,'exists'); return
+    time,ptide,station=[],[],[]
+    for stationi in stations:
+        url=f'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=NOS.COOPS.TAC.WL&begin_date={year}0101&end_date={year}1231&datum=MSL&station={stationi}&time_zone=GMT&units=metric&interval=h&format=csv'
+        fname=f'{sdir}/tide_prediction_{stationi}.csv'
+        urlsave(url,fname)
+        print('complete downloading data into',fname)
+        data=[i.strip().split(',') for i in open(fname,'r').readlines()[1:]]; data=array(data)
+        time.extend(datenum(data[:,0]))
+        ptide.extend(data[:,1].astype('float'))
+        station.extend(tile(stationi,len(data)))
+    S=zdata()   
+    S.time,S.ptide,S.station=array(time),array(ptide),array(station)
+    savez(sname,S)
+    
+def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=['hourly_height'],sname_pre='npz/',sdir='data/',read_again=False,sname=None):
     print('== read noaa tide and current data ==')
     if not sdir.endswith('/'): sdir=sdir+'/'
     for varname in varnames: #['wind','hourly_height','water_temp','air_temp','conductivity']:
-        if len(stations)==1: sname='{}{}_{}_{}_{}'.format(sname_pre,stations[0],varname,years[0],years[-1])
-        if len(stations)>1: sname='{}{}_{}_{}'.format(sname_pre,varname,years[0],years[-1])
+        if len(stations)==1 and sname==None: sname='{}{}_{}_{}_{}'.format(sname_pre,stations[0],varname,years[0],years[-1])
+        if len(stations)>1 and sname==None: sname='{}{}_{}_{}'.format(sname_pre,varname,years[0],years[-1])
         if os.path.isfile(sname+'.npz') and not read_again: print('file exist '+sname+'.npz'); continue
         time=[] #initialize the list, list is extentable
         data=[]
@@ -742,6 +758,38 @@ def mean_profile(ttime,tdep,tdata):
     z=array(z)
     pdata=z.mean(axis=0)
     return pdep,pdata
+
+def combine_data(dataA='data/noaa_tide.npz',dataB='data/noaa_ptide.npz',sname='data/tide.npz',varA=None,varB=None,add_diff=False,redo=False):
+    if updated(sname,[dataA,dataB]) and not redo: print(sname+' exists and updated');return
+    A=loadz(dataA); B=loadz(dataB)
+    if not (hasattr(A,'time') and hasattr(A,'time')): sys.exit('time not exist in the input file')
+    fp=B.time>A.time.max() #must have time
+    if varA==None: #find the data data name automatically, suitable when there is just one variable
+        atts=[var for var in vars(A)]
+        varA=[i for i in atts if not i in ['station','time','VINFO']][0]
+        print(f'{varA} in {dataA} to be combiend')
+        #remove nan values
+    #exec(f'tfp=~isnan(A.{varA}); A.{varA}=A.{varA}[tfp]; A.time=A.time[tfp]')
+    if varB==None:
+        atts=[var for var in vars(B)]
+        varB=[i for i in atts if not i in ['station','time','VINFO']][0]
+        print(f'{varB} in {dataB} to be combiend')
+    #exec(f'tfp=~isnan(B.{varB}); B.{varB}=B.{varB}[tfp]; B.time=B.time[tfp]')
+    if add_diff: #add a systematic difference in historical data
+        T=zdata()
+        x1=A.time; exec(f'T.y1=A.{varA}')
+        x2=B.time; exec(f'T.y2=B.{varB}')
+        y1,y2=pair_data(x1,T.y1,x2,T.y2,hw=0.2/24)
+        mdiff=nanmean(y1)-nanmean(y2) #y1 is the usually the true value (eg. observation)
+        exec(f'B.{varB}=B.{varB}+mdiff')
+        print(f'!! add {mdiff} to {varB} in {dataB}; len y1 and y2=',len(y1),len(y2))
+    S=zdata()
+    exec('S.data=concatenate([A.{},B.{}[fp]])'.format(varA,varB))
+    S.time=concatenate([A.time,B.time[fp]])
+    
+    fp=~isnan(S.data)
+    S.time,S.data=S.time[fp],S.data[fp]
+    savez(sname,S)
 #%% plotting related
 def set_xtick(fmt=0):
     xlims=gca().get_xlim()
