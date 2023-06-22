@@ -181,7 +181,7 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
         #download usgs flow data; first, try 15min data; if fails, then, try daily data
         for url,tag in zip(urls,tags):
             fname='{}/{}_{}_{}_{}.txt'.format(sdir,station,y1,y2,tag) if y1!=y2 else '{}/{}_{}_{}.txt'.format(sdir,station,y1,tag)
-            if fexist(fname): print('exist '+fname); break
+            if fexist(fname) and not reDownload: print('exist '+fname); break
             print('{}/{} download usgs flow: {} for {}-{} {} to {}'.format(m+1,len(stations),station,y1,y2,tag,fname))
             urlsave(url,fname)
             if station=='08072000': urlsave(url.replace('00060','00065'),fname) #download the water level for Lake Houston
