@@ -10,6 +10,7 @@ from math import atan
 # This package is used for Coastal Ocean Modelling
 # It has several components: data doaloading, data processing, plotting 
 # contact jiabi.du@gmail.com; jdu@tamug.edu
+# our website: www.coastalmodeling.org
 #===============================================================
 
 #%% schism related
