@@ -684,7 +684,7 @@ def seasonal_impose(time1,flow1,mtime,mmean,mstd,mmin,mmax,ds=None):
     #limit values to the lower and upper bound based on seasonal cycle
     #ds: if ds is not None, lower and upper bound will be mean+-ds*std; otherwise the lowe and upper will be min and max at each month
     y1=num2date(time1.min()).year
-    y2=num2date(time2.max()).year
+    y2=num2date(time1.max()).year
     ip=0
     flow2=flow1.copy()
     mtime2,mmean2,mstd2,mmin2,mmax2=[],[],[],[],[]
