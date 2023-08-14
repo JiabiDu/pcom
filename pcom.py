@@ -1089,3 +1089,23 @@ def extract_sflux(olon= -94.752329,olat=29.351558,sdir='../run17c2/sflux/',sname
     C=zdata()
     C.u,C.v,C.t,C.time,C.p,C.h=u,v,t,time,p,h
     print(sname); savez(sname,C)
+
+def make_gif(image_dir='20230730/figs/',begin_string='20230730_biomass',gif='20230730/biomass.gif'):
+    #make gif
+    from PIL import Image
+
+    # Sort the PNG files in ascending order
+    png_files = sorted([f for f in os.listdir(image_dir) if f.endswith('.png') and f.startswith(begin_string)])
+
+    # Create a list to store the images
+    images = []
+
+    # Load each PNG image file and append it to the list
+    for png_file in png_files:
+        image_path = os.path.join(image_dir, png_file)
+        image = Image.open(image_path)
+        images.append(image)
+
+    # Save the list of images as a GIF animation
+    print('saving GIF to ',gif)
+    images[0].save(gif, save_all=True, append_images=images[1:], optimize=True, duration=100, loop=0)
