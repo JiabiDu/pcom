@@ -197,7 +197,7 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
         for m,fname in enumerate(fnames):
             if os.path.getsize(fname)<3000: continue
             print('reading {}: {}/{}'.format(fname,m+1,len(fnames)))
-            if os.path.exists(fname.replace('txt','npz')): #corresponding npz file, in case error occur for some specific stations
+            if not reRead and os.path.exists(fname.replace('txt','npz')): #corresponding npz file, in case error occur for some specific stations
                 print('loading existing '+fname.replace('txt','npz'))
                 Z=loadz(fname.replace('txt','npz'))
                 stationi,mti,flowi=Z.stationi,Z.mti,Z.flowi
@@ -1090,7 +1090,7 @@ def extract_sflux(olon= -94.752329,olat=29.351558,sdir='../run17c2/sflux/',sname
     C.u,C.v,C.t,C.time,C.p,C.h=u,v,t,time,p,h
     print(sname); savez(sname,C)
 
-def make_gif(image_dir='20230730/figs/',begin_string='20230730_biomass',gif='20230730/biomass.gif'):
+def make_gif(image_dir='20230730/figs/',begin_string='20230730_biomass',gif='20230730/biomass.gif',duration=100):
     #make gif
     from PIL import Image
 
@@ -1108,4 +1108,4 @@ def make_gif(image_dir='20230730/figs/',begin_string='20230730_biomass',gif='202
 
     # Save the list of images as a GIF animation
     print('saving GIF to ',gif)
-    images[0].save(gif, save_all=True, append_images=images[1:], optimize=True, duration=100, loop=0)
+    images[0].save(gif, save_all=True, append_images=images[1:], optimize=True, duration=duration, loop=0)
