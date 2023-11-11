@@ -471,7 +471,7 @@ def fill_usgs_flow(S=None,begin_time=datenum(2007,1,1),end_time=datenum(2009,1,1
     return Z
 
 # some of my own public functions
-def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=['hourly_height'],sdir='data',load_again=False):
+def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=['hourly_height'],sdir='data',load_again=False,datum='msl'):
     print('== get data from noaa tide & current ==' )
     if not os.path.exists(sdir): os.mkdir(sdir)
     #url0='https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?units=metric&time_zone=gmt&application=NCCOOS&format=csv&interval=h&datum=msl'
@@ -490,12 +490,12 @@ def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=
         
         # get data
         print('get noaa data')
-        for year in years:
-            for product_name in varnames:
+        for product_name in varnames:
+            for year in years:
                 if product_name=='currents':
-                    url0='https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?units=metric&time_zone=gmt&application=NCCOOS&format=csv&interval=h&datum=msl&vel_type=default'
+                    url0=f'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?units=metric&time_zone=gmt&application=NCCOOS&format=csv&interval=h&datum={datum}&vel_type=default'
                 else:
-                    url0='https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?units=metric&time_zone=gmt&application=NCCOOS&format=csv&interval=h&datum=msl'
+                    url0=f'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?units=metric&time_zone=gmt&application=NCCOOS&format=csv&interval=h&datum={datum}'
                 url='{}&begin_date={}0101&end_date={}1231&station={}&product={}'.format(url0,year,year,station,product_name)
                 #print(url)
                 fname='{}/{}_{}_{}.csv'.format(sdir,product_name,station,year)
@@ -504,7 +504,8 @@ def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=
                     urlsave(url,fname)
                     print('.. save into {}'.format(fname))
                 except:
-                    print('... bad request for {} (likely data do not exist)'.format(product_name))
+                    print('... bad request for {} at {} (likely data do not exist)'.format(product_name,station))
+                    break
                     pass
             
     ''' Some Notes
@@ -543,7 +544,7 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
             for year in years:
                 fname='{}{}_{}_{}.csv'.format(sdir,varname,stid,year)
                 print(m+1,'reading '+fname)
-                if not os.path.isfile(fname) or os.path.getsize(fname)<1e3: print('not exist'); continue #if not exist or file size less than 1kb
+                if not os.path.isfile(fname) or os.path.getsize(fname)<1e3: print('no data'); continue #if not exist or file size less than 1kb
                 tdata=array([i.split(',') for i in open(fname,'r').readlines() if i.startswith(str(year))])
                 time.extend(datenum(tdata[:,0]))
                 data.extend(tdata[:,1])
@@ -1109,3 +1110,94 @@ def make_gif(image_dir='20230730/figs/',begin_string='20230730_biomass',gif='202
     # Save the list of images as a GIF animation
     print('saving GIF to ',gif)
     images[0].save(gif, save_all=True, append_images=images[1:], optimize=True, duration=duration, loop=0)
+
+def get_age(lon,lat,time,rn=30*6): 
+    #rn: number of release time for the simulation
+    print('Calculating age')
+    difflon=diff(lon,axis=0)
+    difflat=diff(lat,axis=0)
+    fp=(difflon!=0)*(difflat!=0)
+    npar=lon.shape[1]
+    age=zeros(lon.shape)
+    rtime=zeros(npar)
+    for ipar in arange(npar):
+        itime=nonzero(fp[:,ipar])[0][0] #the first move
+        rtime[ipar]=time[itime] #release time
+    #use the median value for every npar/rn
+    for itime in arange(rn):
+        rtime[int(itime*npar/rn):int((itime+1)*npar/rn)]=median(rtime[int(itime*npar/rn):int((itime+1)*npar/rn)])
+    for ipar in arange(npar):
+        age[:,ipar]=time-rtime[ipar]
+    age[age<0]=0
+    return age,rtime
+
+
+def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6):
+    C=ReadNC(nc)
+    lon=ma.getdata(C.lon.val)
+    lat=ma.getdata(C.lat.val)
+    mtime=ma.getdata(C.time.val)/86400
+    #calculate the age, find the release date
+
+    t0=time.time()
+    age,rtime=get_age(lon,lat,mtime,rn=rn)
+
+    print('Cal inpolygon') #take about 20s
+    bp=read_schism_reg(reg)
+    ind_inpoly=reshape(inside_polygon(c_[lon.ravel(),lat.ravel()],bp.x,bp.y)==1,lon.shape)
+
+    # get release index
+    print('Get release index')
+    ind_release=tile(np.round((rtime-rtime[0])/mean(diff(unique(rtime)))).astype('int'),[lon.shape[0],1])
+
+    # get age index
+    print('Get age index')
+    ind_age=np.round((age/median(diff(age[:,0])))).astype('int')
+
+    # get the number inside the polygon
+    print('Get number of particle in the polygon over time for each release'); 
+    Z=zeros([rn,len(unique(age[:,0]))])
+    for i,j,k in zip(ind_release.ravel(),ind_age.ravel(),ind_inpoly.ravel()):
+        if k: Z[i,j]+=1
+    print('Complete calculating in {:.2f}s'.format(time.time()-t0))
+    lage=unique(age[:,0])
+    npar=lon.shape[1]/rn
+    
+    from sklearn.linear_model import LinearRegression
+    lm = LinearRegression()
+    flushing=[]
+    efolding=[]
+    print('Caculating flushing time')
+    for ir in arange(rn):
+        x=lage[1:90*12].reshape(-1, 1)
+        y=Z[ir,1:90*12]/npar
+        x=x[y>0]; y=y[y>0]
+        lm.fit(x,log(y))
+        flushing.append(-1/lm.coef_)
+        efolding.append(lage[nonzero(Z[ir,:]/npar<exp(-1))[0][0]])
+
+    S=zdata()
+    S.lage=lage; S.release_time=unique(rtime)
+    S.Z=Z
+    S.npar=npar
+    S.flushing=array(flushing)
+    S.efolding=array(efolding)
+    savez(run+'_npar.npz',S)
+    
+    if iplot: 
+        close('all')
+        print('Plotting')
+        figure(figsize=[6,4])
+        for ir in arange(rn):
+            plot(lage[1:],Z[ir,1:]/npar*100,lw=0.5,color=[0,0,0,0.2])
+        plot([0,90],[exp(-1)*100,exp(-1)*100],'k--')
+        plot(lage[1:],Z[:,1:].mean(axis=0)/npar*100,lw=1.5,color=[1,0,0,1])
+        xlim([0,90])
+        ylabel('Percent of paticles retained (%)')
+        xlabel('Days since release')
+        rtext(0.2,0.83,'Mean flushing time (from LR)= {:.2f} \u00B1 {:.2f} d'.format(mean(flushing),std(flushing)))
+        rtext(0.2,0.9,'Mean flushing time (from e-folding)= {:.2f} \u00B1 {:.2f} d'.format(mean(efolding),std(efolding)))
+        tight_layout()
+        grid('on')
+        savefig('figs/'+run+'_flushing.png',dpi=300)
+
