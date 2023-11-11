@@ -1133,6 +1133,7 @@ def get_age(lon,lat,time,rn=30*6):
 
 
 def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6):
+    import numpy as np
     C=ReadNC(nc)
     lon=ma.getdata(C.lon.val)
     lat=ma.getdata(C.lat.val)
@@ -1182,7 +1183,7 @@ def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6):
     S.npar=npar
     S.flushing=array(flushing)
     S.efolding=array(efolding)
-    savez(run+'_npar.npz',S)
+    savez(run+'_flushing.npz',S)
     
     if iplot: 
         close('all')
