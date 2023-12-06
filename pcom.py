@@ -1131,6 +1131,17 @@ def get_age(lon,lat,time,rn=30*6):
     age[age<0]=0
     return age,rtime
 
+def remove_after_hitting_boundary(lon,lat,south=26,east=-87):
+    print('Removing track after the particle hit the boundary')
+    hit=(lat<=south)|(lon>=east)
+    hits=sum(hit,axis=0)
+    for ipar in arange(lon.shape[1]):
+        if hits[ipar]==0: continue
+        itime=nonzero(hit[:,ipar])[0][0] #the first hit
+        lon[itime:,ipar]=nan
+        lat[itime:,ipar]=nan
+    return lon,lat
+
 def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug=False):
     print('calculating flushing for',nc)
     import numpy as np
