@@ -655,7 +655,7 @@ def linear_lag_analysis(time1,flow1,time2,flow2,daily=True,shiftings=arange(-5,6
             if time2[iloc]==itime1 and not isnan(flow1[m]) and not isnan(flow2[iloc]):
                 pair1.append(flow1[m])
                 pair2.append(flow2[iloc])
-        pair1,pair2=array(pair1),array(pair2)
+        pair1,pair2=array(pair1).ravel(),array(pair2).ravel()
         if len(pair2)==0: print('no paired data')
         S=get_stat(pair1,pair2)
         print(S.R)
@@ -1131,62 +1131,116 @@ def get_age(lon,lat,time,rn=30*6):
     age[age<0]=0
     return age,rtime
 
-
-def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,recal=False):
-    npz=run+'_flushing.npz'
-    if fexist(npz) and recal=False: print(npz,'already exists'); return
+def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug=False):
+    print('calculating flushing for',nc)
     import numpy as np
-    C=ReadNC(nc)
-    lon=ma.getdata(C.lon.val)
-    lat=ma.getdata(C.lat.val)
-    mtime=ma.getdata(C.time.val)/86400
-    #calculate the age, find the release date
+    if not fexist('npz/'+run+'_age.npz'):
+        C=ReadNC(nc)
+        lon=ma.getdata(C.lon.val)
+        lat=ma.getdata(C.lat.val)
+        mtime=ma.getdata(C.time.val)/86400
+        #calculate the age, find the release date
+        t0=time.time()
+        age,rtime=get_age(lon,lat,mtime,rn=rn)
+        if age is None:
+            print('No particle moving')
+            with open('error.out','a') as f:
+                f.write(f'\nProblematic run: {run}')
+            return
+        #remove those hiting southern boundary
+        lon,lat=remove_after_hitting_boundary(lon,lat,south=south,east=east)
 
-    t0=time.time()
-    age,rtime=get_age(lon,lat,mtime,rn=rn)
+        print('Cal inpolygon') #take about 20s
+        bp=read_schism_reg(reg)
+        ind_inpoly=reshape(inside_polygon(c_[lon.ravel(),lat.ravel()],bp.x,bp.y)==1,lon.shape)
 
-    print('Cal inpolygon') #take about 20s
-    bp=read_schism_reg(reg)
-    ind_inpoly=reshape(inside_polygon(c_[lon.ravel(),lat.ravel()],bp.x,bp.y)==1,lon.shape)
+        # get release index
+        print('Get release index')
+        ind_release=tile(np.round((rtime-rtime[0])/mean(diff(unique(rtime)))).astype('int'),[lon.shape[0],1])
+        if rn==1: ind_release=tile(0,[lon.shape[0],1])
 
-    # get release index
-    print('Get release index')
-    ind_release=tile(np.round((rtime-rtime[0])/mean(diff(unique(rtime)))).astype('int'),[lon.shape[0],1])
+        # get age index
+        print('Get age index')
+        ind_age=np.round((age/median(diff(age[:,0])))).astype('int')
 
-    # get age index
-    print('Get age index')
-    ind_age=np.round((age/median(diff(age[:,0])))).astype('int')
+        # get the number inside the polygon
+        print('Get number of particle in the polygon over time for each release');
+        Z=zeros([rn,len(unique(age[:,0]))])
+        for i,j,k in zip(ind_release.ravel(),ind_age.ravel(),ind_inpoly.ravel()):
+            if i<0 or j<0: continue
+            if k: Z[i,j]+=1
+        print('Complete calculating in {:.2f}s'.format(time.time()-t0))
+        lage=unique(age[:,0])
+        npar=lon.shape[1]/rn
+        S=zdata()
+        S.npar,S.lage,S.Z,S.rtime=npar,lage,Z,rtime
+        savez('npz/'+run+'_age.npz',S)
+    else:
+        S=loadz('npz/'+run+'_age.npz')
+        npar,lage,Z,rtime=S.npar,S.lage,S.Z,S.rtime
 
-    # get the number inside the polygon
-    print('Get number of particle in the polygon over time for each release'); 
-    Z=zeros([rn,len(unique(age[:,0]))])
-    for i,j,k in zip(ind_release.ravel(),ind_age.ravel(),ind_inpoly.ravel()):
-        if k: Z[i,j]+=1
-    print('Complete calculating in {:.2f}s'.format(time.time()-t0))
-    lage=unique(age[:,0])
-    npar=lon.shape[1]/rn
-    
     from sklearn.linear_model import LinearRegression
     lm = LinearRegression()
-    flushing=[]
-    efolding=[]
+    ftimes=[]
+    etimes=[]
     print('Caculating flushing time')
+    Fs,R2s=[],[]
     for ir in arange(rn):
-        x=lage[1:90*12].reshape(-1, 1)
-        y=Z[ir,1:90*12]/npar
+        x=lage[1:]; y=Z[ir,1:]/npar
         x=x[y>0]; y=y[y>0]
-        lm.fit(x,log(y))
-        flushing.append(-1/lm.coef_)
-        efolding.append(lage[nonzero(Z[ir,:]/npar<exp(-1))[0][0]])
+
+        # find efolding time
+        ly=y
+        #ly=lpfilt(y, 2/24, 0.48) #do low pass filter
+        etime=nan
+        if sum(ly<exp(-1))>0:
+            etime=x[nonzero(ly<exp(-1))[0][0]]
+        t2=nan
+        if sum(ly<exp(-3))>0:
+            t2=x[nonzero(ly<exp(-3))[0][0]]  #the time when particle number decrease to e(-2)
+
+        # get linear regressions
+        lm = LinearRegression()
+        begin_age=30
+        if not isnan(etime): begin_age=min(etime,30)
+        end_age=120
+        if not isnan(t2): end_age=min(t2,120)
+
+        R2=[]; F=[]
+        for age in arange(begin_age,end_age):
+            fp=(x<=age)
+            tx,ty=x[fp].reshape([-1,1]),log(y[fp])
+            lm.fit(tx,ty)
+            F.append(-1/lm.coef_) # flushing time
+            R2.append(lm.score(tx,ty)) #R2, same results using sklnear.metrics.r2
+        Fs.append(F); R2s.append(R2)
+        # find the R that start to decrease
+        R2=array(R2); F=array(F)
+        diffR2=diff(R2)
+        ftime=nan; ivalid=nan
+        for i,r in enumerate(R2):
+            if i==0: continue
+            if sum(diffR2[i:]>0)==0: #or at the end
+                tF=F[0:i+1]; tR=R2[0:i+1]
+                for cr in arange(0.8,0.6,-0.1):
+                    ivalid=nonzero(tR>cr)[0]
+                    if len(ivalid)>0: break
+                ftime=mean(F[ivalid])
+                #print(bay,ir,'mean Flushing time is',ftime)
+                break
+        etimes.append(etime)
+        ftimes.append(ftime)
 
     S=zdata()
     S.lage=lage; S.release_time=unique(rtime)
     S.Z=Z
     S.npar=npar
-    S.flushing=array(flushing)
-    S.efolding=array(efolding)
-    savez(npz,S)
-    
+    S.ftime=array(ftimes)
+    S.etime=array(etimes)
+    S.begin_age,S.end_age,S.F,S.R2=begin_age,end_age,Fs,R2s
+    savez('npz/'+run+'_flushing.npz',S)
+    print('Flushing calculation results saved into','npz/'+run+'_flushing.npz')
+    print(run,'mean flushing and efolding',nanmean(S.ftime),nanmean(S.etime)) 
     if iplot: 
         close('all')
         print('Plotting')
@@ -1198,9 +1252,10 @@ def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,recal=False):
         xlim([0,90])
         ylabel('Percent of paticles retained (%)')
         xlabel('Days since release')
-        rtext(0.2,0.83,'Mean flushing time (from LR)= {:.2f} \u00B1 {:.2f} d'.format(mean(flushing),std(flushing)))
-        rtext(0.2,0.9,'Mean flushing time (from e-folding)= {:.2f} \u00B1 {:.2f} d'.format(mean(efolding),std(efolding)))
+        rtext(0.2,0.83,'Mean flushing time (from LR)= {:.2f} \u00B1 {:.2f} d'.format(nanmean(ftimes),std(ftimes)))
+        rtext(0.2,0.9,'Mean flushing time (from e-folding)= {:.2f} \u00B1 {:.2f} d'.format(nanmean(etimes),std(etimes)))
+        title(run)
         tight_layout()
+       
         grid('on')
         savefig('figs/'+run+'_flushing.png',dpi=300)
-
