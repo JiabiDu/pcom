@@ -196,12 +196,12 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
         station=[]; mtime=[]; flow=[]; river=[]
         for m,fname in enumerate(fnames):
             if os.path.getsize(fname)<3000: continue
-            print('reading {}: {}/{}'.format(fname,m+1,len(fnames)))
             if not reRead and os.path.exists(fname.replace('txt','npz')): #corresponding npz file, in case error occur for some specific stations
                 print('loading existing '+fname.replace('txt','npz'))
                 Z=loadz(fname.replace('txt','npz'))
                 stationi,mti,flowi=Z.stationi,Z.mti,Z.flowi
             else:
+                print('reading {}: {}/{}'.format(fname,m+1,len(fnames)))
                 if 'daily' in fname:
                     stationi,mti,flowi=array([array(i.split('\t')[1:4]) for i in open(fname,'r').readlines() if i.startswith('USGS')]).T
                     #compute time
@@ -210,21 +210,27 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
                     stationi,mti,tz,flowi=array([array(i.split('\t')[1:5]) for i in open(fname,'r').readlines() if i.startswith('USGS')]).T
                     #compute time
                     mti=datenum(mti)
+                #remove records containing non-number values
+                fpn=array([set(i).issubset({'0','1','2','3','4','5','6','7','8','9','.'}) for i in flowi])
+                stationi,mti,flowi=stationi[fpn],mti[fpn],flowi[fpn].astype('float')
                 St=zdata()
                 St.stationi=stationi
                 St.mti=mti
                 St.flowi=flowi
+                print('save data into',fname.replace('txt','npz'))
                 savez(fname.replace('txt','npz'),St)
             #save variables
             station.extend(stationi)
             mtime.extend(mti)
             flow.extend(flowi)
         #save data
-        flow=array(flow); fpn=~((flow=='Ice')|(flow=='')|(flow=='Ssn')|(flow=='Eqp')|(flow=='***')|(flow=='Mnt'))
+        flow=array(flow); 
+        #fpn=~((flow=='Ice')|(flow=='')|(flow=='Ssn')|(flow=='Eqp')|(flow=='***')|(flow=='Mnt')|(flow=='Dis'))
+        #fpn=array([set(i).issubset({'0','1','2','3','4','5','6','7','8','9','.'}) for i in flow])
         S=zdata()
-        S.station=array(station)[fpn]
-        S.time=array(mtime)[fpn]
-        S.flow=array(flow)[fpn].astype('float')*0.028316847
+        S.station=array(station)
+        S.time=array(mtime)
+        S.flow=array(flow).astype('float')*0.028316847
           
         #calculate flow for San Jacinto River based on wl-flow curve
         fpn=S.station=='08072000'
@@ -257,7 +263,7 @@ def get_usgs_temp(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
         #get links
         urls=['https://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00010=on&format=rdb&site_no='+station+'&period=&begin_date='+StartT+'&end_date='+EndT,  #15-min flow
               'https://waterdata.usgs.gov/nwis/dv?cb_00010=on&format=rdb&site_no='+station+'&period=&begin_date='+StartT+'&end_date='+EndT] #daily flow
-        tags=['15min','daily']
+        tags=['daily','15min']
     
         #download usgs temp data; first, try 15min data; if fails, then, try daily data
         for url,tag in zip(urls,tags):
@@ -471,7 +477,7 @@ def fill_usgs_flow(S=None,begin_time=datenum(2007,1,1),end_time=datenum(2009,1,1
     return Z
 
 # some of my own public functions
-def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=['hourly_height'],sdir='data',load_again=False,datum='msl'):
+def get_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varnames=['hourly_height'],sdir='data',load_again=False,datum='navd'):
     print('== get data from noaa tide & current ==' )
     if not os.path.exists(sdir): os.mkdir(sdir)
     #url0='https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?units=metric&time_zone=gmt&application=NCCOOS&format=csv&interval=h&datum=msl'
@@ -1142,6 +1148,15 @@ def remove_after_hitting_boundary(lon,lat,south=26,east=-87):
         lat[itime:,ipar]=nan
     return lon,lat
 
+def remove_sticking(lon,lat):
+    print('Removing sticking points')
+    difflon=diff(lon,axis=0)
+    difflat=diff(lat,axis=0)
+    fp=(difflon==0)*(difflat==0)
+    lon,lat=lon[1:,:],lat[1:,:]
+    lon[fp]=nan; lat[fp]=nan
+    return lon,lat
+
 def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug=False):
     print('calculating flushing for',nc)
     import numpy as np
@@ -1270,3 +1285,39 @@ def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug
        
         grid('on')
         savefig('figs/'+run+'_flushing.png',dpi=300)
+
+def cal_LET(nc,xlims=[-100,-80],ylims=[18,31],xinterval=0.01,yinterval=0.01,time_interval=2,fname=None):
+    import numpy as np
+    print('Calculating LET'); t0=time.time()
+    C=ReadNC(nc)
+    lon=ma.getdata(C.lon.val)
+    lat=ma.getdata(C.lat.val)
+    #% remove sticking points
+    lon,lat=remove_sticking(lon,lat)
+    #% remove track after hitting boundary
+    lon,lat=remove_after_hitting_boundary(lon,lat)
+    # calculate the index
+    indi=np.round((lon-xlims[0])/xinterval).astype('int')
+    indj=np.round((lat-ylims[0])/yinterval).astype('int')
+    X,Y=meshgrid(arange(xlims[0],xlims[1],xinterval),arange(ylims[0],ylims[1],yinterval))
+    Z=zeros(X.shape)
+    for i,j,loni,lati in zip(indi.ravel(),indj.ravel(),lon.ravel(),lat.ravel()):
+        if i<0 or j<0: continue #they are due to nan value
+        Z[j,i]+=1 #be mindful it is [j,i],not [i,j]
+    Z=Z/lon.shape[1]*time_interval  #Z/npar*time_interval
+    print('Complete calculating LET in {:.2f}s'.format(time.time()-t0))
+    if fname!=None:
+        S=zdata()
+        S.X,S.Y,S.Z=X,Y,Z
+        savez(fname,S); print(f'data saved into {fname}')
+    return X,Y,Z
+
+def plot_land(gd,color=[0.9,0.9,0.9,1]):
+    xv,yv=gd.x[gd.ilbn[0]],gd.y[gd.ilbn[0]]
+    xv=[*xv,min(xv),min(xv),max(xv)]
+    yv=[*yv,min(yv),max(yv),max(yv)]
+    fill(xv,yv,color=color)
+    for ia,il in enumerate(gd.ilbn):
+        if gd.island[ia]==1:fill(gd.x[il],gd.y[il],color=color)
+    xlim([gd.x.min(),gd.x.max()])
+    ylim([gd.y.min(),gd.y.max()])
