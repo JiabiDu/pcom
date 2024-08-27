@@ -5,6 +5,7 @@ import json
 from scipy.stats import gaussian_kde
 from scipy.interpolate import griddata
 from math import atan
+import imageio
 #================================================================
 # AUTHOR NOTES
 # This package is used for Coastal Ocean Modelling
@@ -171,13 +172,15 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
     if sdir is None: sdir=f'usgs_{y1}_{y2}'
     if not os.path.exists(sdir): os.mkdir(sdir)
     if not os.path.exists('figs'): os.mkdir('figs')
-    if sname is None: sname=f'npz/usgs_flow_{y1}_{y2}'
+    if sname is None: 
+        sname=f'npz/usgs_flow_{y1}_{y2}'
+        if not fexist('npz'): os.mkdir('npz')
     if os.path.exists(sname+'.npz') and not reDownload: return
     for m,station in enumerate(stations):
         #get links
         urls=['https://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00060=on&format=rdb&site_no='+station+'&period=&begin_date='+StartT+'&end_date='+EndT,  #15-min flow
               'https://waterdata.usgs.gov/nwis/dv?cb_00060=on&format=rdb&site_no='+station+'&period=&begin_date='+StartT+'&end_date='+EndT] #daily flow
-        tags=['15min','daily']
+        tags=['daily','15min']
     
         #download usgs flow data; first, try 15min data; if fails, then, try daily data
         for url,tag in zip(urls,tags):
@@ -195,23 +198,32 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
         fnames=array(['{}/{}'.format(sdir,i) for i in os.listdir(sdir) if i.endswith('.txt') and i[0:8] in stations])
         station=[]; mtime=[]; flow=[]; river=[]
         for m,fname in enumerate(fnames):
-            if os.path.getsize(fname)<3000: continue
+            if os.path.getsize(fname)<6000: continue
             if not reRead and os.path.exists(fname.replace('txt','npz')): #corresponding npz file, in case error occur for some specific stations
                 print('loading existing '+fname.replace('txt','npz'))
                 Z=loadz(fname.replace('txt','npz'))
                 stationi,mti,flowi=Z.stationi,Z.mti,Z.flowi
+                if type(flowi[0])==str or type(flowi[0])==str_:
+                    fpn=array([set(i).issubset({'0','1','2','3','4','5','6','7','8','9','.'}) and len(i)!=0 for i in flowi])
+                    stationi,mti,flowi=stationi[fpn],mti[fpn],flowi[fpn].astype('float')
             else:
                 print('reading {}: {}/{}'.format(fname,m+1,len(fnames)))
                 if 'daily' in fname:
                     stationi,mti,flowi=array([array(i.split('\t')[1:4]) for i in open(fname,'r').readlines() if i.startswith('USGS')]).T
+                    fpn=array([set(i).issubset({'0','1','2','3','4','5','6','7','8','9','.'}) and len(i)!=0 for i in flowi])
+                    if sum(fpn)==0: 
+                       print('format is wrong: not in daily format; will try to read in 15min format')
+                       stationi,mti,tz,flowi=array([array(i.split('\t')[1:5]) for i in open(fname,'r').readlines() if i.startswith('USGS')]).T
+                       fpn=array([set(i).issubset({'0','1','2','3','4','5','6','7','8','9','.'}) and len(i)!=0 for i in flowi])
+                       if sum(fpn)==0: sys.exit('There is still no records for this file',fname)
                     #compute time
-                    mti=datenum(mti)
+                    mti=quickdatenum(mti)
                 else:
                     stationi,mti,tz,flowi=array([array(i.split('\t')[1:5]) for i in open(fname,'r').readlines() if i.startswith('USGS')]).T
                     #compute time
-                    mti=datenum(mti)
+                    mti=quickdatenum(mti)
                 #remove records containing non-number values
-                fpn=array([set(i).issubset({'0','1','2','3','4','5','6','7','8','9','.'}) for i in flowi])
+                fpn=array([set(i).issubset({'0','1','2','3','4','5','6','7','8','9','.'}) and len(i)!=0 for i in flowi])
                 stationi,mti,flowi=stationi[fpn],mti[fpn],flowi[fpn].astype('float')
                 St=zdata()
                 St.stationi=stationi
@@ -222,7 +234,8 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
             #save variables
             station.extend(stationi)
             mtime.extend(mti)
-            flow.extend(flowi)
+            flow.extend(flowi.astype('float'))
+            
         #save data
         flow=array(flow); 
         #fpn=~((flow=='Ice')|(flow=='')|(flow=='Ssn')|(flow=='Eqp')|(flow=='***')|(flow=='Mnt')|(flow=='Dis'))
@@ -252,7 +265,13 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
         
         # save the data into npz format
         savez(sname,S)
-def get_usgs_temp(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reRead=False,sdir=None):
+
+def delta_mtime(fname,days):
+    # return if the modification time of fname is within a defined days from now
+    timestamp=os.get.mtime(fname)
+    return datetime.datetime.now()-datetime.datetime.fromtimestamp(timestamp)>datetime.timedelta(days=days)
+
+def get_usgs_temp(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reRead=False,sdir=None,reLoad=True):
     y1=num2date(datenum(StartT)).year; y2=num2date(datenum(EndT)-1/24).year
     if sdir is None: sdir=f'usgs_temp_{y1}_{y2}'
     os.makedirs(sdir,exist_ok=True)
@@ -263,12 +282,14 @@ def get_usgs_temp(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
         #get links
         urls=['https://nwis.waterdata.usgs.gov/usa/nwis/uv/?cb_00010=on&format=rdb&site_no='+station+'&period=&begin_date='+StartT+'&end_date='+EndT,  #15-min flow
               'https://waterdata.usgs.gov/nwis/dv?cb_00010=on&format=rdb&site_no='+station+'&period=&begin_date='+StartT+'&end_date='+EndT] #daily flow
-        tags=['daily','15min']
+        tags=['15min','daily']
     
         #download usgs temp data; first, try 15min data; if fails, then, try daily data
         for url,tag in zip(urls,tags):
             fname='{}/{}_{}_{}_{}.txt'.format(sdir,station,y1,y2,tag) if y1!=y2 else '{}/{}_{}_{}.txt'.format(sdir,station,y1,tag)
-            if fexist(fname): break
+            if fexist(fname): 
+               if delta_mtime(fname,2/24): break #downloaded within 2 hr from now
+               if not reLoad: break
             print('download usgs temp: {} for {}-{} {}'.format(station,y1,y2,tag))
             urlsave(url,fname)
             if os.path.getsize(fname)<3000: print('No data available');os.remove(fname)
@@ -1321,3 +1342,18 @@ def plot_land(gd,color=[0.9,0.9,0.9,1]):
         if gd.island[ia]==1:fill(gd.x[il],gd.y[il],color=color)
     xlim([gd.x.min(),gd.x.max()])
     ylim([gd.y.min(),gd.y.max()])
+
+def toDate(otime):
+    return [num2date(i) for i in otime]
+
+def make_mp4(mp4,fnames,fps=10):
+    fnames.sort()
+    images = [imageio.v2.imread(fname) for fname in fnames]
+    imageio.mimsave(mp4, images, fps=fps)
+
+def adj_figsize():
+    print('adjut figsize based on lon/lat limits')
+    aw,ah=gca().get_position().width,gca().get_position().height
+    fw,fh=gcf().get_size_inches()
+    fh=(diff(ylim()))*fw*aw/(ah*diff(xlim())*cos(mean(ylim())*pi/180)); fh=fh[0]
+    gcf().set_size_inches(fw,fh, forward=True)
