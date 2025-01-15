@@ -609,6 +609,7 @@ def process_noaa_tide_current(stations=['8637689'],years=arange(2007,2022),varna
             S.wl=data.astype('float')
         else:
             S.data=data.astype('float')
+        os.makedirs(sname[0:sname.rfind('/')],exist_ok=True) #create the folder 
         savez(sname,S)
         print(f'data saved into {sname}.npz')
 
@@ -1307,7 +1308,7 @@ def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug
         grid('on')
         savefig('figs/'+run+'_flushing.png',dpi=300)
 
-def cal_LET(nc,xlims=[-100,-80],ylims=[18,31],xinterval=0.01,yinterval=0.01,time_interval=2,fname=None):
+def cal_LET(nc,xlims=[-100,-80],ylims=[18,31],xinterval=0.01,yinterval=0.01,time_interval=2,fname=None,east=-81,south=17.5):
     import numpy as np
     print('Calculating LET'); t0=time.time()
     C=ReadNC(nc)
@@ -1316,7 +1317,7 @@ def cal_LET(nc,xlims=[-100,-80],ylims=[18,31],xinterval=0.01,yinterval=0.01,time
     #% remove sticking points
     lon,lat=remove_sticking(lon,lat)
     #% remove track after hitting boundary
-    lon,lat=remove_after_hitting_boundary(lon,lat)
+    lon,lat=remove_after_hitting_boundary(lon,lat,east=east,south=south)
     # calculate the index
     indi=np.round((lon-xlims[0])/xinterval).astype('int')
     indj=np.round((lat-ylims[0])/yinterval).astype('int')
@@ -1335,7 +1336,7 @@ def cal_LET(nc,xlims=[-100,-80],ylims=[18,31],xinterval=0.01,yinterval=0.01,time
 
 def plot_land(gd,color=[0.9,0.9,0.9,1]):
     xv,yv=gd.x[gd.ilbn[0]],gd.y[gd.ilbn[0]]
-    xv=[*xv,min(xv),min(xv),max(xv)]
+    xv=[*xv,min(xv)-1,min(xv)-1,max(xv)]
     yv=[*yv,min(yv),max(yv),max(yv)]
     fill(xv,yv,color=color)
     for ia,il in enumerate(gd.ilbn):
@@ -1352,8 +1353,49 @@ def make_mp4(mp4,fnames,fps=10):
     imageio.mimsave(mp4, images, fps=fps)
 
 def adj_figsize():
-    print('adjut figsize based on lon/lat limits')
+    #print('adjut figsize based on lon/lat limits')
     aw,ah=gca().get_position().width,gca().get_position().height
     fw,fh=gcf().get_size_inches()
     fh=(diff(ylim()))*fw*aw/(ah*diff(xlim())*cos(mean(ylim())*pi/180)); fh=fh[0]
     gcf().set_size_inches(fw,fh, forward=True)
+
+def cal_reachtime(nc,sreg,dreg,rname):
+    brun=nc.split('/')[-2]
+    M=ReadNC(nc)
+    dt=mean(diff(M.time.val))
+    sregion=sreg.split('/')[-1].split('.')[-2]
+    dregion=dreg.split('/')[-1].split('.')[-2]
+
+    lon=M.lon.val.ravel()
+    lat=M.lat.val.ravel()
+
+    #taking about 1-2 minutes
+    for ireg,reg in enumerate([sreg,dreg]):
+        region=reg.split('/')[-1].split('.')[-2]
+        sname=f'npz2/{brun}_inreg_{region}.npz'
+        reg=read_schism_reg(reg)
+        if  not fexist(sname):
+            print(f'cal inpolygon {region} for {nc}')
+            inreg=inside_polygon(c_[lon,lat],reg.x,reg.y)
+            inreg=reshape(inreg,M.lon.val.shape)
+            S=zdata(); S.inreg=inreg; savez(sname,S)
+        if ireg==0: S=loadz(sname); in_sreg=S.inreg
+        if ireg==1: S=loadz(sname); in_dreg=S.inreg
+
+    ntime,npar=M.lon.val.shape
+    reachtime=[]
+    for ipar in range(npar):
+        ins=in_sreg[:,ipar]
+        ind=in_dreg[:,ipar]
+        if sum(ind==1)==0: #never reach to the destination region
+           reachtime.append(nan)
+           continue
+        t2=nonzero(ind==1)[0][0] #the first time in destination region
+        t1=nonzero(ins[:t2]==1)[0][-1]  #last time in sregion, use t2 to avoid reentry case
+        reachtime.append((t2-t1)*dt/86400)
+
+    S=zdata()
+    S.sregion=sregion; S.dregion=dregion
+    S.reachtime=reachtime
+    S.ntime,S.npar=ntime,npar
+    savez(rname,S)
