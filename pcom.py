@@ -1181,12 +1181,20 @@ def remove_sticking(lon,lat):
 
 def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug=False):
     print('calculating flushing for',nc)
+    if os.path.getsize(nc)<1024**2: print(nc,'file size < 1M');  return
+    if reg==None: print('must provide a reg file'); return
+    if run==None: print('must mprovide a run name to name npz file'); return
+    
     import numpy as np
     if not fexist('npz/'+run+'_age.npz'):
         C=ReadNC(nc)
         lon=ma.getdata(C.lon.val)
         lat=ma.getdata(C.lat.val)
         mtime=ma.getdata(C.time.val)/86400
+        # use nan for lon/lat values when they are masked
+        print('removing track when time value is invalid') #occationally, at some writing steps, masked value is used. 
+        for itime in nonzero([ma.is_masked(i) for i in C.time.val])[0]: lon[itime,:]=nan; lat[itime,:]=nan  
+
         #calculate the age, find the release date
         t0=time.time()
         age,rtime=get_age(lon,lat,mtime,rn=rn)
@@ -1195,6 +1203,7 @@ def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug
             with open('error.out','a') as f:
                 f.write(f'\nProblematic run: {run}')
             return
+
         #remove those hiting southern boundary
         lon,lat=remove_after_hitting_boundary(lon,lat,south=south,east=east)
 
@@ -1236,7 +1245,7 @@ def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug
     for ir in arange(rn):
         x=lage[1:]; y=Z[ir,1:]/npar
         x=x[y>0]; y=y[y>0]
-
+        print('   at release No.',ir)
         # find efolding time
         ly=y
         #ly=lpfilt(y, 2/24, 0.48) #do low pass filter
