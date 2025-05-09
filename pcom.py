@@ -268,7 +268,7 @@ def get_usgs_flow(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reR
 
 def delta_mtime(fname,days):
     # return if the modification time of fname is within a defined days from now
-    timestamp=os.get.mtime(fname)
+    timestamp=os.path.getmtime(fname)
     return datetime.datetime.now()-datetime.datetime.fromtimestamp(timestamp)>datetime.timedelta(days=days)
 
 def get_usgs_temp(stations=None,StartT='1980-1-1',EndT='2022-1-1',sname=None,reRead=False,sdir=None,reLoad=True):
