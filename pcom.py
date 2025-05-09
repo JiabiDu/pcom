@@ -1179,12 +1179,11 @@ def remove_sticking(lon,lat):
     lon[fp]=nan; lat[fp]=nan
     return lon,lat
 
-def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug=False):
+def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug=False,min_r2=0.9,begin_age=30,end_age=120):
     print('calculating flushing for',nc)
     if os.path.getsize(nc)<1024**2: print(nc,'file size < 1M');  return
     if reg==None: print('must provide a reg file'); return
     if run==None: print('must mprovide a run name to name npz file'); return
-    
     import numpy as np
     if not fexist('npz/'+run+'_age.npz'):
         C=ReadNC(nc)
@@ -1218,16 +1217,17 @@ def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug
 
         # get age index
         print('Get age index')
-        ind_age=np.round((age/median(diff(age[:,0])))).astype('int')
+        timeinterval=median(diff(age[:,0]))
+        ind_age=np.round((age/timeinterval)).astype('int')
 
         # get the number inside the polygon
-        print('Get number of particle in the polygon over time for each release');
-        Z=zeros([rn,len(unique(age[:,0]))])
+        print('Get particle number in polygon over time for each release');
+        Z=zeros([rn,ind_age.max()+1])
         for i,j,k in zip(ind_release.ravel(),ind_age.ravel(),ind_inpoly.ravel()):
             if i<0 or j<0: continue
             if k: Z[i,j]+=1
         print('Complete calculating in {:.2f}s'.format(time.time()-t0))
-        lage=unique(age[:,0])
+        lage=arange(ind_age.max()+1)*timeinterval
         npar=lon.shape[1]/rn
         S=zdata()
         S.npar,S.lage,S.Z,S.rtime=npar,lage,Z,rtime
@@ -1236,68 +1236,55 @@ def cal_flushing(nc,reg=None,run=None,iplot=True,rn=30*6,south=26,east=-87,debug
         S=loadz('npz/'+run+'_age.npz')
         npar,lage,Z,rtime=S.npar,S.lage,S.Z,S.rtime
 
-    from sklearn.linear_model import LinearRegression
-    lm = LinearRegression()
+    from scipy.stats import linregress
     ftimes=[]
     etimes=[]
+    ftimes2=[]
     print('Caculating flushing time')
     Fs,R2s=[],[]
     for ir in arange(rn):
         x=lage[1:]; y=Z[ir,1:]/npar
         x=x[y>0]; y=y[y>0]
-        print('   at release No.',ir)
-        # find efolding time
         ly=y
-        #ly=lpfilt(y, 2/24, 0.48) #do low pass filter
+        ly=lpfilt(y, 2/24, 0.48) #do low pass filter
+        print('   at release No.',ir)
         etime=nan
-        if sum(ly<exp(-1))>0:
-            etime=x[nonzero(ly<exp(-1))[0][0]]
-        t2=nan
-        if sum(ly<exp(-3))>0:
-            t2=x[nonzero(ly<exp(-3))[0][0]]  #the time when particle number decrease to e(-2)
-
-        # get linear regressions
-        lm = LinearRegression()
-        begin_age=30
-        if not isnan(etime): begin_age=min(etime,30)
-        end_age=120
-        if not isnan(t2): end_age=min(t2,120)
-
+        if sum(ly<exp(-1))>0: etime=x[nonzero(ly<exp(-1))[0][0]]
+        # find efolding time
+        ftime=nan
         R2=[]; F=[]
         for age in arange(begin_age,end_age):
             fp=(x<=age)
-            tx,ty=x[fp].reshape([-1,1]),log(y[fp])
-            lm.fit(tx,ty)
-            F.append(-1/lm.coef_) # flushing time
-            R2.append(lm.score(tx,ty)) #R2, same results using sklnear.metrics.r2
-        Fs.append(F); R2s.append(R2)
-        # find the R that start to decrease
+            m=linregress(x[fp],log(y[fp]))
+            slope,rvalue,pvalue=m.slope,m.rvalue,m.pvalue
+            R2.append(rvalue**2)
+            F.append(-1/slope)
         R2=array(R2); F=array(F)
-        diffR2=diff(R2)
-        ftime=nan; ivalid=nan
-        for i,r in enumerate(R2):
-            if i==0: continue
-            if sum(diffR2[i:]>0)==0: #or at the end
-                tF=F[0:i+1]; tR=R2[0:i+1]
-                for cr in arange(0.8,0.6,-0.1):
-                    ivalid=nonzero(tR>cr)[0]
-                    if len(ivalid)>0: break
-                ftime=mean(F[ivalid])
-                #print(bay,ir,'mean Flushing time is',ftime)
-                break
+        Fs.append(F); R2s.append(R2) #save the R2 and F
+        if R2[-1]>min_r2: ftime=F[R2==max(R2)][0] #if the linear trend also observable to end the simulation
+
+        # find flushing time based on linear trend 
+        ftime2=nan
+        fp=(x<=end_age) #use all of them
+        m=linregress(x[fp],log(y[fp]))
+        slope,rvalue,pvalue=m.slope,m.rvalue,m.pvalue
+        if rvalue**2>min_r2: ftime2=-1/m.slope
+
         etimes.append(etime)
         ftimes.append(ftime)
+        ftimes2.append(ftime2)
 
     S=zdata()
     S.lage=lage; S.release_time=unique(rtime)
     S.Z=Z
     S.npar=npar
     S.ftime=array(ftimes)
+    S.ftime2=array(ftimes2)
     S.etime=array(etimes)
     S.begin_age,S.end_age,S.F,S.R2=begin_age,end_age,Fs,R2s
     savez('npz/'+run+'_flushing.npz',S)
     print('Flushing calculation results saved into','npz/'+run+'_flushing.npz')
-    print(run,'mean flushing and efolding',nanmean(S.ftime),nanmean(S.etime)) 
+    print(f'{run} mean etime, ftime, and ftime2: {nanmean(S.etime):.1f},{nanmean(S.ftime):.1f},{nanmean(S.ftime2):.1f}') 
     if iplot: 
         close('all')
         print('Plotting')
@@ -1408,3 +1395,9 @@ def cal_reachtime(nc,sreg,dreg,rname):
     S.reachtime=reachtime
     S.ntime,S.npar=ntime,npar
     savez(rname,S)
+
+def running(jname='run19q3_2000'):
+    out=sbp.check_output('squeue -u jdu',shell=True).decode().split('\n')
+    for rec in out[1:-1]:
+        if rec.split()[1]==jname: return True
+    return False
