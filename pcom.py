@@ -1401,3 +1401,15 @@ def running(jname='run19q3_2000'):
     for rec in out[1:-1]:
         if rec.split()[1]==jname: return True
     return False
+
+def get_circle(center_lat=29.505534,center_lon=-94.9592435,radius_km=1,angles=linspace(0,360,361)):
+    # Generate circle points
+    from geopy.distance import geodesic
+    circle_lats = []
+    circle_lons = []
+
+    for angle in angles:
+        destination = geodesic(kilometers=radius_km).destination((center_lat, center_lon), angle)
+        circle_lats.append(destination.latitude)
+        circle_lons.append(destination.longitude)
+    return circle_lons,circle_lats
